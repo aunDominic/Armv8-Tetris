@@ -3,3 +3,7 @@
 //
 
 #include "branch.h"
+
+bool handleBranch(INST inst){
+    return false; // errors
+}

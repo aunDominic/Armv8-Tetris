@@ -49,12 +49,6 @@ cmake_ninja_workdir = /Users/dominic/CLionProjects/Emulator/cmake-build-debug/
 
 build cmake_object_order_depends_target_Emulator: phony || CMakeFiles/Emulator.dir
 
-build CMakeFiles/Emulator.dir/src/emulate.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/emulate.c || cmake_object_order_depends_target_Emulator
-  DEP_FILE = CMakeFiles/Emulator.dir/src/emulate.c.o.d
-  FLAGS = -g -std=gnu99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5 -fcolor-diagnostics
-  OBJECT_DIR = CMakeFiles/Emulator.dir
-  OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src
-
 build CMakeFiles/Emulator.dir/src/loader.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/loader.c || cmake_object_order_depends_target_Emulator
   DEP_FILE = CMakeFiles/Emulator.dir/src/loader.c.o.d
   FLAGS = -g -std=gnu99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5 -fcolor-diagnostics
@@ -97,12 +91,6 @@ build CMakeFiles/Emulator.dir/src/instructions/special.c.o: C_COMPILER__Emulator
   OBJECT_DIR = CMakeFiles/Emulator.dir
   OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src/instructions
 
-build CMakeFiles/Emulator.dir/src/assemble.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/assemble.c || cmake_object_order_depends_target_Emulator
-  DEP_FILE = CMakeFiles/Emulator.dir/src/assemble.c.o.d
-  FLAGS = -g -std=gnu99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5 -fcolor-diagnostics
-  OBJECT_DIR = CMakeFiles/Emulator.dir
-  OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src
-
 
 # =============================================================================
 # Link build statements for STATIC_LIBRARY target Emulator
@@ -111,7 +99,7 @@ build CMakeFiles/Emulator.dir/src/assemble.c.o: C_COMPILER__Emulator_unscanned_D
 #############################################
 # Link the static library libEmulator.a
 
-build libEmulator.a: C_STATIC_LIBRARY_LINKER__Emulator_Debug CMakeFiles/Emulator.dir/src/emulate.c.o CMakeFiles/Emulator.dir/src/loader.c.o CMakeFiles/Emulator.dir/src/registers.c.o CMakeFiles/Emulator.dir/src/instructions/dataprocessing.c.o CMakeFiles/Emulator.dir/src/instructions/shifter.c.o CMakeFiles/Emulator.dir/src/instructions/datatransfer.c.o CMakeFiles/Emulator.dir/src/instructions/branch.c.o CMakeFiles/Emulator.dir/src/instructions/special.c.o CMakeFiles/Emulator.dir/src/assemble.c.o
+build libEmulator.a: C_STATIC_LIBRARY_LINKER__Emulator_Debug CMakeFiles/Emulator.dir/src/loader.c.o CMakeFiles/Emulator.dir/src/registers.c.o CMakeFiles/Emulator.dir/src/instructions/dataprocessing.c.o CMakeFiles/Emulator.dir/src/instructions/shifter.c.o CMakeFiles/Emulator.dir/src/instructions/datatransfer.c.o CMakeFiles/Emulator.dir/src/instructions/branch.c.o CMakeFiles/Emulator.dir/src/instructions/special.c.o
   ARCH_FLAGS = -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5
   LANGUAGE_COMPILE_FLAGS = -g
   OBJECT_DIR = CMakeFiles/Emulator.dir
