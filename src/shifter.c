@@ -3,15 +3,16 @@
 //
 
 #include "shifter.h"
-u_int64_t lsl(int bits, u_int64_t value){
+#include <stdint.h>
+uint64_t lsl(int bits, uint64_t value){
     return 0;
 }
-u_int64_t lsr(int bits, u_int64_t value){
+uint64_t lsr(int bits, uint64_t value){
     return 0;
 }
-u_int64_t asr(int bits, u_int64_t value){
+uint64_t asr(int bits, uint64_t value){
     return 0;
 }
-u_int64_t ror(int bits, u_int64_t value){
+uint64_t ror(int bits, uint64_t value){
     return 0;
 }
