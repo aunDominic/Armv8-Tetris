@@ -14,8 +14,8 @@ struct PSTATE pstate = {
 };
 // 64-bit number to represent which bits are set
 // Use bitmasks to query the registers
-uint64_t registers[31] = {0};
-uint64_t programCounter = 0;
-uint64_t zeroRegister = 0;
+int64_t registers[31] = {0};
+int64_t programCounter = 0;
+int64_t zeroRegister = 0;
 BYTE memory[1 << 21] = {0};
-const uint64_t HALT =  0x8a000000;
+const int64_t HALT =  0x8a000000;
