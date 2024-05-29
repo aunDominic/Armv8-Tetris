@@ -52,6 +52,9 @@
 #----------------------------------------------------------------------------------
 # NEW FILE STUFF FOR TESTING
 
+CC = gcc
+CFLAGS = -Wall -O0 -ggdb
+
 # Define the targets
 TARGETS := assemble emulate
 

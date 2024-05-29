@@ -16,4 +16,6 @@ add_library(Emulator STATIC
         src/branch.h
         src/special.c
         src/special.h
+		src/assemble/assemble.c
+		src/emulate.c
 )
