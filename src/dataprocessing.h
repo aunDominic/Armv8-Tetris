@@ -6,6 +6,7 @@
 #define EMULATOR_DATAPROCESSING_H
 
 #include <stdbool.h>
+
 #include "memory.h"
 // Immediate
 //
