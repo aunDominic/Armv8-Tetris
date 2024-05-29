@@ -7,6 +7,7 @@
 
 #include <stdbool.h>
 #include "memory.h"
+#include "assert.h"
 // Immediate
 //
 bool immediateHandler(INST instruction);
