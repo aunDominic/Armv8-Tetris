@@ -49,47 +49,47 @@ cmake_ninja_workdir = /Users/dominic/CLionProjects/Emulator/cmake-build-debug/
 
 build cmake_object_order_depends_target_Emulator: phony || CMakeFiles/Emulator.dir
 
-build CMakeFiles/Emulator.dir/src/loader.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/loader.c || cmake_object_order_depends_target_Emulator
-  DEP_FILE = CMakeFiles/Emulator.dir/src/loader.c.o.d
+build CMakeFiles/Emulator.dir/src/memory.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/memory.c || cmake_object_order_depends_target_Emulator
+  DEP_FILE = CMakeFiles/Emulator.dir/src/memory.c.o.d
   FLAGS = -g -std=gnu99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/Emulator.dir
   OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src
 
-build CMakeFiles/Emulator.dir/src/registers.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/registers.c || cmake_object_order_depends_target_Emulator
-  DEP_FILE = CMakeFiles/Emulator.dir/src/registers.c.o.d
+build CMakeFiles/Emulator.dir/src/dataprocessing.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/dataprocessing.c || cmake_object_order_depends_target_Emulator
+  DEP_FILE = CMakeFiles/Emulator.dir/src/dataprocessing.c.o.d
   FLAGS = -g -std=gnu99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/Emulator.dir
   OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src
 
-build CMakeFiles/Emulator.dir/src/instructions/dataprocessing.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/instructions/dataprocessing.c || cmake_object_order_depends_target_Emulator
-  DEP_FILE = CMakeFiles/Emulator.dir/src/instructions/dataprocessing.c.o.d
+build CMakeFiles/Emulator.dir/src/shifter.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/shifter.c || cmake_object_order_depends_target_Emulator
+  DEP_FILE = CMakeFiles/Emulator.dir/src/shifter.c.o.d
   FLAGS = -g -std=gnu99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/Emulator.dir
-  OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src/instructions
+  OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src
 
-build CMakeFiles/Emulator.dir/src/instructions/shifter.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/instructions/shifter.c || cmake_object_order_depends_target_Emulator
-  DEP_FILE = CMakeFiles/Emulator.dir/src/instructions/shifter.c.o.d
+build CMakeFiles/Emulator.dir/src/datatransfer.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/datatransfer.c || cmake_object_order_depends_target_Emulator
+  DEP_FILE = CMakeFiles/Emulator.dir/src/datatransfer.c.o.d
   FLAGS = -g -std=gnu99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/Emulator.dir
-  OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src/instructions
+  OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src
 
-build CMakeFiles/Emulator.dir/src/instructions/datatransfer.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/instructions/datatransfer.c || cmake_object_order_depends_target_Emulator
-  DEP_FILE = CMakeFiles/Emulator.dir/src/instructions/datatransfer.c.o.d
+build CMakeFiles/Emulator.dir/src/branch.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/branch.c || cmake_object_order_depends_target_Emulator
+  DEP_FILE = CMakeFiles/Emulator.dir/src/branch.c.o.d
   FLAGS = -g -std=gnu99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/Emulator.dir
-  OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src/instructions
+  OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src
 
-build CMakeFiles/Emulator.dir/src/instructions/branch.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/instructions/branch.c || cmake_object_order_depends_target_Emulator
-  DEP_FILE = CMakeFiles/Emulator.dir/src/instructions/branch.c.o.d
+build CMakeFiles/Emulator.dir/src/special.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/special.c || cmake_object_order_depends_target_Emulator
+  DEP_FILE = CMakeFiles/Emulator.dir/src/special.c.o.d
   FLAGS = -g -std=gnu99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/Emulator.dir
-  OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src/instructions
+  OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src
 
-build CMakeFiles/Emulator.dir/src/instructions/special.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/instructions/special.c || cmake_object_order_depends_target_Emulator
-  DEP_FILE = CMakeFiles/Emulator.dir/src/instructions/special.c.o.d
+build CMakeFiles/Emulator.dir/src/bitmanipulation.c.o: C_COMPILER__Emulator_unscanned_Debug /Users/dominic/CLionProjects/Emulator/src/bitmanipulation.c || cmake_object_order_depends_target_Emulator
+  DEP_FILE = CMakeFiles/Emulator.dir/src/bitmanipulation.c.o.d
   FLAGS = -g -std=gnu99 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5 -fcolor-diagnostics
   OBJECT_DIR = CMakeFiles/Emulator.dir
-  OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src/instructions
+  OBJECT_FILE_DIR = CMakeFiles/Emulator.dir/src
 
 
 # =============================================================================
@@ -99,7 +99,7 @@ build CMakeFiles/Emulator.dir/src/instructions/special.c.o: C_COMPILER__Emulator
 #############################################
 # Link the static library libEmulator.a
 
-build libEmulator.a: C_STATIC_LIBRARY_LINKER__Emulator_Debug CMakeFiles/Emulator.dir/src/loader.c.o CMakeFiles/Emulator.dir/src/registers.c.o CMakeFiles/Emulator.dir/src/instructions/dataprocessing.c.o CMakeFiles/Emulator.dir/src/instructions/shifter.c.o CMakeFiles/Emulator.dir/src/instructions/datatransfer.c.o CMakeFiles/Emulator.dir/src/instructions/branch.c.o CMakeFiles/Emulator.dir/src/instructions/special.c.o
+build libEmulator.a: C_STATIC_LIBRARY_LINKER__Emulator_Debug CMakeFiles/Emulator.dir/src/memory.c.o CMakeFiles/Emulator.dir/src/dataprocessing.c.o CMakeFiles/Emulator.dir/src/shifter.c.o CMakeFiles/Emulator.dir/src/datatransfer.c.o CMakeFiles/Emulator.dir/src/branch.c.o CMakeFiles/Emulator.dir/src/special.c.o CMakeFiles/Emulator.dir/src/bitmanipulation.c.o
   ARCH_FLAGS = -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5
   LANGUAGE_COMPILE_FLAGS = -g
   OBJECT_DIR = CMakeFiles/Emulator.dir

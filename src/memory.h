@@ -7,13 +7,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef uint8_t BYTE;
-typedef uint32_t INST;
+typedef int8_t BYTE;
+typedef int32_t INST;
 
-extern const uint64_t HALT;
-extern uint64_t registers[31];
-extern uint64_t programCounter;
-extern uint64_t zeroRegister;
+extern const int64_t HALT;
+extern int64_t registers[31];
+extern int64_t programCounter;
+extern int64_t zeroRegister;
 struct PSTATE{
     bool Z;
     bool N;

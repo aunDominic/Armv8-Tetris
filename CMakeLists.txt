@@ -16,4 +16,6 @@ add_library(Emulator STATIC
         src/branch.h
         src/special.c
         src/special.h
+        src/bitmanipulation.c
+        src/bitmanipulation.h
 )
