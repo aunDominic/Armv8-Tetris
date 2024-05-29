@@ -14,5 +14,6 @@ int main(int argc, char **argv){
     // Each instruction handler should return a bool indicating success
     // Errors are handled here.
 
-
+    printf("Emulating running\n");
+    return EXIT_SUCCESS;
 }

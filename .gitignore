@@ -15,8 +15,9 @@
 
 #ignore junk files from compiling C code
 *.o
-emulate
-assemble
+*.d
+#emulate
+#assemble
 
 #ignore junk files from compiling Haskell code
 *.hi
@@ -32,4 +33,19 @@ assemble
 *.vrb
 *.nav
 *.toc
+
+# Ignore all .idea folder contents
+.idea/
+
+# But keep specific useful files
+!.idea/codeStyles/
+!.idea/runConfigurations/
+!.idea/inspectionProfiles/
+
+# Ignore user-specific files
+.idea/.name
+.idea/editor.xml
+
+# Ignore build artifacts
+cmake-build-debug/
 

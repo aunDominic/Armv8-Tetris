@@ -25,8 +25,8 @@ bool loadLiteralHandler(INST instruction){
 }
 
 
-static int extractBits(INST instruction, int start, int end){
-    int
-}
-// Addressing modes
-bool
+// static int extractBits(INST instruction, int start, int end){
+//     int
+// }
+// // Addressing modes
+// bool
