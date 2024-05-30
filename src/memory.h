@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef int8_t BYTE;
+typedef uint8_t BYTE;
 typedef int32_t INST;
 #define regCount 31
 #define memSize 1 << 21
