@@ -1,9 +1,8 @@
 {
-	"archive" : {},
 	"artifacts" : 
 	[
 		{
-			"path" : "libEmulator.a"
+			"path" : "Emulator"
 		}
 	],
 	"backtrace" : 1,
@@ -11,7 +10,7 @@
 	{
 		"commands" : 
 		[
-			"add_library"
+			"add_executable"
 		],
 		"files" : 
 		[
@@ -61,8 +60,23 @@
 		}
 	],
 	"id" : "Emulator::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-g",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "",
+				"role" : "flags"
+			}
+		],
+		"language" : "C"
+	},
 	"name" : "Emulator",
-	"nameOnDisk" : "libEmulator.a",
+	"nameOnDisk" : "Emulator",
 	"paths" : 
 	{
 		"build" : ".",
@@ -177,5 +191,5 @@
 			"sourceGroupIndex" : 0
 		}
 	],
-	"type" : "STATIC_LIBRARY"
+	"type" : "EXECUTABLE"
 }

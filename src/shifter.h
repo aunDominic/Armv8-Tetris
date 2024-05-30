@@ -9,7 +9,18 @@
 #endif //EMULATOR_SHIFTER_H
 
 // Treat these instructions as the ALU shifter
-uint64_t lsl(int bits, uint64_t value); // returns the value shifted by bits amount
-uint64_t lsr(int bits, uint64_t value); // value can be either a 32 bit or 64 bit number
-uint64_t asr(int bits, uint64_t value);
-uint64_t ror(int bits, uint64_t value);
+int64_t lsl(int bits, int64_t value, int width);
+int64_t asr(int bits, int64_t value, int width);
+
+int64_t lsr(int bits, int64_t value, int width);
+
+int64_t ror(int bits, int64_t value, int width);
+
+
+// eg
+// setWidth(value, 32);
+// if (want to lsl){
+// lsl
+// else {
+// lsr
+// etc

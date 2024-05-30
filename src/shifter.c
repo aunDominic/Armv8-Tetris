@@ -4,15 +4,18 @@
 
 #include "shifter.h"
 #include <stdint.h>
-uint64_t lsl(int bits, uint64_t value){
+#include "bitmanipulation.h"
+
+
+int64_t lsl(int bits, int64_t value, int width){
+    return value << bits;
+}
+int64_t lsr(int bits, int64_t value, int width){
+    return value >> bits;
+}
+int64_t asr(int bits, int64_t value, int width){
     return 0;
 }
-uint64_t lsr(int bits, uint64_t value){
-    return 0;
-}
-uint64_t asr(int bits, uint64_t value){
-    return 0;
-}
-uint64_t ror(int bits, uint64_t value){
+int64_t ror(int bits, int64_t value, int width){
     return 0;
 }

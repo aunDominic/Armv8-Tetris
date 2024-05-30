@@ -41,7 +41,7 @@ include CMakeFiles/rules.ninja
 
 cmake_ninja_workdir = /Users/dominic/CLionProjects/Emulator/cmake-build-debug/
 # =============================================================================
-# Object build statements for STATIC_LIBRARY target Emulator
+# Object build statements for EXECUTABLE target Emulator
 
 
 #############################################
@@ -93,20 +93,19 @@ build CMakeFiles/Emulator.dir/src/bitmanipulation.c.o: C_COMPILER__Emulator_unsc
 
 
 # =============================================================================
-# Link build statements for STATIC_LIBRARY target Emulator
+# Link build statements for EXECUTABLE target Emulator
 
 
 #############################################
-# Link the static library libEmulator.a
+# Link the executable Emulator
 
-build libEmulator.a: C_STATIC_LIBRARY_LINKER__Emulator_Debug CMakeFiles/Emulator.dir/src/memory.c.o CMakeFiles/Emulator.dir/src/dataprocessing.c.o CMakeFiles/Emulator.dir/src/shifter.c.o CMakeFiles/Emulator.dir/src/datatransfer.c.o CMakeFiles/Emulator.dir/src/branch.c.o CMakeFiles/Emulator.dir/src/special.c.o CMakeFiles/Emulator.dir/src/bitmanipulation.c.o
-  ARCH_FLAGS = -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5
-  LANGUAGE_COMPILE_FLAGS = -g
+build Emulator: C_EXECUTABLE_LINKER__Emulator_Debug CMakeFiles/Emulator.dir/src/memory.c.o CMakeFiles/Emulator.dir/src/dataprocessing.c.o CMakeFiles/Emulator.dir/src/shifter.c.o CMakeFiles/Emulator.dir/src/datatransfer.c.o CMakeFiles/Emulator.dir/src/branch.c.o CMakeFiles/Emulator.dir/src/special.c.o CMakeFiles/Emulator.dir/src/bitmanipulation.c.o
+  FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.2.sdk -mmacosx-version-min=13.5
   OBJECT_DIR = CMakeFiles/Emulator.dir
   POST_BUILD = :
   PRE_LINK = :
-  TARGET_FILE = libEmulator.a
-  TARGET_PDB = Emulator.a.dbg
+  TARGET_FILE = Emulator
+  TARGET_PDB = Emulator.dbg
 
 
 #############################################
@@ -134,8 +133,6 @@ build rebuild_cache: phony CMakeFiles/rebuild_cache.util
 # =============================================================================
 # Target aliases.
 
-build Emulator: phony libEmulator.a
-
 # =============================================================================
 # Folder targets.
 
@@ -144,7 +141,7 @@ build Emulator: phony libEmulator.a
 #############################################
 # Folder: /Users/dominic/CLionProjects/Emulator/cmake-build-debug
 
-build all: phony libEmulator.a
+build all: phony Emulator
 
 # =============================================================================
 # Built-in targets

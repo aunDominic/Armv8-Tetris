@@ -10,4 +10,5 @@
 
 bool singleDataTransferHandler(INST instruction);
 bool loadLiteralHandler(INST instruction);
+
 #endif //EMULATOR_DATATRANSFER_H
