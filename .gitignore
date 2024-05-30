@@ -16,8 +16,13 @@
 #ignore junk files from compiling C code
 *.o
 *.d
+
+# removed these so you can have subfolders with these names
+# though there's a workaround
 #emulate
 #assemble
+
+build/
 
 #ignore junk files from compiling Haskell code
 *.hi

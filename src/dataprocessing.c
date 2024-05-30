@@ -65,7 +65,9 @@ static bool arithmeticInstProcessor(INST instruction) {
 
 
 }
-static bool isWideMovePatternProcessor(INST instruction);
+static bool isWideMovePatternProcessor(INST instruction) {
+    return false;
+};
 
 bool immediateHandler(INST instruction){
 
