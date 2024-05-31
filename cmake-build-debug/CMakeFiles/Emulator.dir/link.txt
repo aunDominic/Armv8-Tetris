@@ -1,2 +1,0 @@
-C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\ar.exe qc libEmulator.a CMakeFiles/Emulator.dir/src/memory.c.obj CMakeFiles/Emulator.dir/src/dataprocessing.c.obj CMakeFiles/Emulator.dir/src/shifter.c.obj CMakeFiles/Emulator.dir/src/datatransfer.c.obj CMakeFiles/Emulator.dir/src/branch.c.obj CMakeFiles/Emulator.dir/src/special.c.obj
-C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\ranlib.exe libEmulator.a

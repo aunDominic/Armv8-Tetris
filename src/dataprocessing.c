@@ -11,12 +11,18 @@
 // If you need more helper functions, use static functions
 
 #include <assert.h>
+#define ZERO_REGISTER 31
 
-//Extraction Functions
+//Extraction Functions - test passed
 
-static INST extractBits(INST instruction, int start, int end) {
+static uint32_t extractBits(INST instruction, int start, int end) {
     assert(start <= end);
-    INST mask = ((1U << (end - start + 1)) -1) << start;
+    uint32_t mask;
+    if (end - start == 31) {
+        mask = 0xFFFFFFFF; // Mask for all 32 bits
+    } else {
+        mask = ((1U << (end - start + 1)) - 1) << start;
+    }
     return (instruction & mask) >> start;
 }
 
@@ -24,8 +30,26 @@ static bool patternMatch(INST bits, INST pattern) {
     return bits == pattern;
 }
 
+//Writing and Reading to Registers - test passed
 
-//Shifter Functions
+static void writeReg(int reg, int64_t signedVal, int mode) {
+    if (reg == ZERO_REGISTER) {
+        return;
+    } else {
+        registers[reg] = (mode) ? signedVal : (int32_t)signedVal;
+    }
+}
+
+static int64_t readReg(int reg, int mode) {
+    if (reg == ZERO_REGISTER) {
+        return 0;
+    } else {
+        return (mode) ? registers[reg] : (int32_t)(registers[reg]);
+    }
+}
+
+
+//Shifter Functions - test passed
 
 static int64_t lsl (int64_t value, int shift_amount, int mode) {
     int64_t result = value << shift_amount;
