@@ -272,6 +272,9 @@ static bool wideMoveImmInstProcessor(INST instruction) {
 
 }
 
+
+//Immediate Handler (detects arithmetic/widemove inst) - passed all tests
+
 bool immediateHandler(INST instruction){
 
     INST maskedOPI = extractBits(instruction, 23, 25);
@@ -286,9 +289,11 @@ bool immediateHandler(INST instruction){
 
 }
 
+
+
+
+
 //Register Handler and Processor Logic Below
-
-
 
 // Enumeration for shift types
 typedef enum {
