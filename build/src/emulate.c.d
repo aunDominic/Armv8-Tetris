@@ -1,3 +1,3 @@
-build/./src/emulate.c.o: src/emulate.c src/registers.h
+build/./src/emulate.c.o: src/emulate.c src/memory.h
 
-src/registers.h:
+src/memory.h:

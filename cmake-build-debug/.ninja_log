@@ -1,0 +1,12 @@
+# ninja log v5
+1	48	1717085807401479384	build.ninja	dabc3aa373988563
+0	6	0	clean	ad90e366ad70d77b
+2	51	1717085170945640872	CMakeFiles/Emulator.dir/src/memory.c.o	613d9da555abc34a
+244	268	1717084695834901000	libEmulator.a	1b87db806201fa2
+3	57	1717085170952784463	CMakeFiles/Emulator.dir/src/branch.c.o	6e4a3d81439088e1
+2	54	1717085170949344212	CMakeFiles/Emulator.dir/src/shifter.c.o	a45e047e1e08aee9
+2	46	1717085170939670017	CMakeFiles/Emulator.dir/src/dataprocessing.c.o	4a10fca42840974d
+3	41	1717085170933888251	CMakeFiles/Emulator.dir/src/special.c.o	46b8e065b575f7d3
+58	99	1717085170995058455	Emulator	89d4fcc1179f5b24
+3	56	1717085170952283201	CMakeFiles/Emulator.dir/src/bitmanipulation.c.o	e7681e848e01ca9c
+2	57	1717085170953449063	CMakeFiles/Emulator.dir/src/datatransfer.c.o	41ba9ecbdd529c97
