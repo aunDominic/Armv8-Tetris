@@ -47,6 +47,7 @@ static void writeReg(int reg, int64_t signedVal, int mode) {
     } else {
         printf("writing value %lld to register %d in %d mode\n", signedVal, reg, mode); //r
         registers[reg] = (mode) ? signedVal : (int32_t)signedVal;
+        return;
     }
 }
 
@@ -109,11 +110,41 @@ static int64_t ror(int64_t value, int shift_amount, int mode) {
 
 //Updating pstate
 
-static void updateFlags(int64_t a, int64_t b, int64_t result, uint32_t opc, int mode) {
+static void updateFlags(int64_t a, int64_t b, int64_t result, int opc, int mode) {
+
+    typedef enum{
+        ADDS = 0b01,
+        SUBS = 0b11,
+        ANDS = 0b110,
+        BICS = 0b111
+    } Code;
 
     pstate.N = (mode) ? (extractBits(result, 63, 63)) : (extractBits(result, 31, 31));
     pstate.Z = result == 0;
 
+    switch ((Code)opc) {
+
+        case ADDS: {
+            break;
+        }
+
+        case SUBS: {
+            break;
+        }
+
+        case ANDS: {
+            pstate.C = 0;
+            pstate.V = 0;
+            break;
+        }
+
+        case BICS: {
+            pstate.C = 0;
+            pstate.V = 0;
+            break;
+        }
+
+    }
 }
 
 //Processing Arithmetic Instructions with an Unsgined 12 Bit Immediate Value
