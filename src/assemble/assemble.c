@@ -7,10 +7,9 @@
 #include "symbol_table.h"
 #include "line_reader.h"
 #include "opcode_table.h"
+#include "common_types.h"
 
 #define MAX_LINE_LENGTH 500
-#define INST_SIZE 4
-#define NULL_CHAR '\0'
 
 // static void binaryWriteFile(FILE *outputFile, uint32_t value);
 

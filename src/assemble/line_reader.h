@@ -6,8 +6,7 @@
 #define LINE_READER_H
 #include <stdbool.h>
 #include <stdint.h>
-
-typedef uint32_t INST;
+#include "common_types.h"
 
 bool is_label(const char *line);
 INST lineHandler(char *line, uint32_t address);

@@ -3,7 +3,7 @@
 //
 
 #include "opcode_table.h"
-
+#include "common_types.h"
 #include <stddef.h>
 
 SymbolTable *opcodeTable = NULL;
