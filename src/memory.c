@@ -37,7 +37,7 @@ INST getInstAtAddr(int addr){
     BYTE byte2 = memory[addr+1];
     BYTE byte3 = memory[addr+2];
     BYTE byte4 = memory[addr+3];
-g
+
     // default implementation is just to interpret these as is
     // ie default is little-endian
     INST instruction = 0;
