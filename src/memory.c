@@ -21,15 +21,13 @@ BYTE memory[1 << 21] = {0};
 const int32_t HALT =  0x8a000000;
 void printMemory(int start, int end){
     for (int i = start; i < end; i++){
-        printf("Address %d: %x\n", i, memory[i]);
+        printf("Address %d: %d\n", i, memory[i]);
     }
 }
 void printRegisters(){
     for (int i = 0; i < regCount; i++) {
         printf("Register %d: %d\n", i, registers[i]);
     }
-
-
 }
 INST getInstAtAddr(int addr){
     assert(addr <= (memSize - 4) &&  "Error: Memory address out of bounds."); // ideally we have a macro for 1 << 21 or 21
