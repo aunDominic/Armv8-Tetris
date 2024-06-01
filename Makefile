@@ -7,7 +7,7 @@ CFLAGS = -Wall -O0 -ggdb
 TARGETS := assemble emulate
 
 # Define the build directory and source directories
-BUILD_DIR := armv8_testsuite/solution
+BUILD_DIR := ./build
 SRC_DIR := ./src
 ASSEMBLE_SRC_DIR := $(SRC_DIR)/assemble
 
@@ -33,13 +33,13 @@ CPPFLAGS := $(INC_FLAGS) -MMD -MP
 # Build rules for each target
 all: $(TARGETS)
 
-assemble: $(BUILD_DIR)/assemble
-emulate: $(BUILD_DIR)/emulate
+assemble: $(BUILD_DIR)/assemble_executable
+emulate: $(BUILD_DIR)/emulate_executable
 
-$(BUILD_DIR)/assemble: $(ASSEMBLE_OBJS)
+$(BUILD_DIR)/assemble_executable: $(ASSEMBLE_OBJS)
 	$(CXX) $(ASSEMBLE_OBJS) -o $@ $(LDFLAGS)
 
-$(BUILD_DIR)/emulate: $(EMULATE_OBJS)
+$(BUILD_DIR)/emulate_executable: $(EMULATE_OBJS)
 	$(CXX) $(EMULATE_OBJS) -o $@ $(LDFLAGS)
 
 # Build step for C source

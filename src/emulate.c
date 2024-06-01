@@ -8,10 +8,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <inttypes.h>
-#include "bitmanipulation.h"
-#include "dataprocessing.h"
-#include "datatransfer.h"
-#include "branch.h"
 
 static void readFile(FILE *inputFile);
 
@@ -26,13 +22,15 @@ static void execute(); // executes the code using the instructions in memory
 // then call the relevant instruction handler (from one of the holder files)
 // could use a better name. ie it routes it to smth that knows how to handle it
 // this will hopefully be called from execute()
-// instructionHandler will use fetch() to fetch instructions.
+// instructionHandler might use instFromAddress(PC) as a parameter
 static void instructionHandler(INST instruction);
 
 // should read the next 4 bytes starting at PC
 // depending on the ordering used by the instruction handlers,
 // this function may need to be changed
 // could use bit manipulation to place the 4 bytes in the right order
+INST instFromAddress(int64_t programCounter, bool isLittle);
+
 
 int main(const int argc, char **argv){
 
@@ -47,7 +45,7 @@ int main(const int argc, char **argv){
     // Binary Loader start, handle command line arguments
     FILE *inputFile, *outputFile = stdout;
     // default outputFile to stdout
-    printf("Emulator start.\n");
+
     if ((inputFile = fopen(argv[1], "rb")) == NULL) {
         perror("Error opening input file");
         return EXIT_FAILURE;
@@ -61,7 +59,7 @@ int main(const int argc, char **argv){
             return EXIT_FAILURE;
         }
     }
-    printf("Attempting to read file: \n");
+
     readFile(inputFile);
 
     // execute should be a loop
@@ -80,24 +78,11 @@ int main(const int argc, char **argv){
 // reads the inputFile and it will attempt to read over memory
 // returns void cus I'll probably just do exit();
 static void readFile(FILE *inputFile) {
-    fseek(inputFile, 0L, SEEK_END); // Sets file pointer to the end
+    fseek(inputFile, 0L, SEEK_END);
     size_t fileSize = ftell(inputFile); // basically returns the size of file in bytes
     rewind(inputFile); // put file pointer to start
     size_t bytesRead = fread(memory, 1, fileSize, inputFile); // reads file into memory
     assert(bytesRead == fileSize); // ensures it read enough bytes
-    printf("File read succesfully.\nCalling printMemory...\n");
-    printMemory(0, 30);
-    printf("Non-zero memory:\n");
-
-    for (int32_t address = 0; address < (1 << 21) - 4; address += 4) {
-        // use instFromAddress as this is exactly what we want
-        const INST valAtAddress = getInstAtAddr(address);
-        if (valAtAddress != 0) {
-            // yes this looks like hell and yes PRIx32 is portable, it lives in
-            // inttypes.h
-            printf("0x%8.8" PRIx32 ": %8.8" PRIx32 "\n", address, valAtAddress);
-        }
-    }
 }
 
 
@@ -161,7 +146,7 @@ static void outputHandler(FILE *outputFile) {
 
     for (int32_t address = 0; address < (1 << 21) - 4; address += 4) {
         // use instFromAddress as this is exactly what we want
-        const INST valAtAddress = getInstAtAddr(address);
+        const INST valAtAddress = instFromAddress(address, true);
         if (valAtAddress != 0) {
             // yes this looks like hell and yes PRIx32 is portable, it lives in
             // inttypes.h
@@ -173,30 +158,40 @@ static void outputHandler(FILE *outputFile) {
 }
 
 static void execute() {
-    printf("Default execute function called.\n");
+    printf("Default execute function called. TODO()\n");
     // should be a loop
     // should call instructionHandler()
-    INST instruction;
-    while ((instruction = fetch()) != HALT){
-        printf("Fetching instruction...\n 0x%8.8" PRIx32 ": %8.8" PRIx32 "\n", programCounter, instruction);
-        instructionHandler(instruction);
+}
+
+
+static void instructionHandler(INST instruction) {
+    printf("Instruction handler called. TODO()\n");
+}
+
+// isLittle is there for littleEndian Mode
+INST instFromAddress(const int64_t programCounter, const bool isLittle) {
+    assert(programCounter <= ((1 << 21) - 4)); // ideally we have a macro for 1 << 21 or 21
+    BYTE byte1 = memory[programCounter];
+    BYTE byte2 = memory[programCounter+1];
+    BYTE byte3 = memory[programCounter+2];
+    BYTE byte4 = memory[programCounter+3];
+
+    // default implementation is just to interpret these as is
+    // ie default is little-endian
+    INST instruction = 0;
+    // now perform bitwise manipulation
+
+    if (isLittle) {
+        instruction |= (INST) byte4 << 24;
+        instruction |= (INST) byte3 << 16;
+        instruction |= (INST) byte2 << 8;
+        instruction |= (INST) byte1;
+    } else {
+        instruction |= (INST) byte1 << 24;
+        instruction |= (INST) byte2 << 16;
+        instruction |= (INST) byte3 << 8;
+        instruction |= (INST) byte4;
     }
 
+    return instruction;
 }
-#define isSDT(instruction) extractBits(instruction, 25, 29) == 28 && extractBits(instruction, 31, 31) == 1 && extractBits(instruction,23 ,23) == 0
-#define isLL(instruction) extractBits(instruction, 24, 29) == 24 && extractBits(instruction, 31, 31) == 0
-#define isBr(instruction) extractBits(instruction, 26, 29) == 5
-#define isReg(instruction) extractBits(instruction, 25, 27) == 5
-#define isImm(instruction) extractBits(instruction, 26, 28) == 4
-static void instructionHandler(INST instruction) {
-    if (isImm(instruction)) immediateHandler(instruction);
-    else if (isReg(instruction)) registerHandler(instruction);
-    else if (isSDT(instruction)) singleDataTransferHandler(instruction);
-    else if (isLL(instruction)) loadLiteralHandler(instruction);
-    else if (isBr(instruction)) branchHandler(instruction);
-    else assert(false && "Error: Not a valid instruction type.");
-
-    if (!(isBr(instruction))) programCounter += 4;
-}
-
-
