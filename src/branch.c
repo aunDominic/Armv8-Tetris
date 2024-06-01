@@ -6,6 +6,7 @@
 #include "bitmanipulation.h"
 #include <string.h>
 #include <memory.h>
+#include <stdio.h>
 static bool pstateHandler(int64_t cond){
     char byte[4];
     for (int i = 3; i >= 0; i--){
@@ -21,19 +22,23 @@ static bool pstateHandler(int64_t cond){
     else return false; // not a valid encoding
 }
 bool branchHandler(INST inst){
+    printf("Branch instruction called...\n");
     const int64_t isRegister = binaryToDecimal("1101011000011111000000");
     const int64_t isUnconditional = binaryToDecimal("000101");
     const int64_t isConditional = binaryToDecimal("01010100");
     const int64_t zero = binaryToDecimal("11111");
     if (extractBits(inst, 26, 31) == isUnconditional){
+        printf("Uncondtional branch!\n");
         int64_t simm26 = sign_extend(extractBits(inst, 0, 25), 26);
-        programCounter += simm26;
+        programCounter += simm26 * 4;
     } else if (extractBits(inst, 10, 31) == isRegister
         && extractBits(inst, 0, 4) == 0){
+        printf("Register branch!\n");
         int64_t xn = extractBits(inst, 5, 9);
         if (xn == zero) return true;
         programCounter = xn;
     } else if (extractBits(inst, 24, 31) == isConditional && extractBits(inst, 4,4) == 0){
+        printf("Conditional branch!\n");
         int64_t simm19 = sign_extend(extractBits(inst, 5, 23), 19);
         int64_t cond = extractBits(inst, 0, 3);
         if (pstateHandler(cond)) programCounter += simm19 * 4;
