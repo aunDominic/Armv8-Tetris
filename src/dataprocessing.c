@@ -3,7 +3,7 @@
 //
 
 #include "dataprocessing.h"
-
+#include <stdio.h>
 // If you need more helper functions, use static functions
 
 #include <assert.h>
@@ -70,7 +70,7 @@ static bool isWideMovePatternProcessor(INST instruction) {
 };
 
 bool immediateHandler(INST instruction){
-
+    printf("Immediate called.\n");
     int opiStart = 23;
     int opiEnd = 25;
 
@@ -94,5 +94,7 @@ bool immediateHandler(INST instruction){
 
 
 bool registerHandler (INST instruction){
+    printf("Register called.\n");
+
     return false; // if errors occur
 }
