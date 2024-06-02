@@ -49,7 +49,7 @@ int main(const int argc, const char **argv) {
     char buffer[MAX_LINE_LENGTH];
     uint32_t address = 0;
     while (fgets(buffer, sizeof(buffer), inputFile) != NULL) {
-        // make sure the buffer is a proper strength
+        // make sure the buffer is a proper string
         buffer[strcspn(buffer, "\n")] = NULL_CHAR;
 
         if (strlen(buffer) > 0) {
@@ -58,7 +58,8 @@ int main(const int argc, const char **argv) {
                 // now add to symbol_table
 
                 // first remove the colon at the end of buffer for labels
-                buffer[strlen(buffer) - 1] = NULL_CHAR;
+                char *pos = strchr(buffer, ':');
+                buffer[pos - buffer] = NULL_CHAR;
                 addSymbol(symbol_table, buffer, address);
                 // printf("Address %d: %s\n", address, buffer);
             } else {

@@ -5,6 +5,8 @@
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
+#define NOT_FOUND -1
+
 typedef struct {
     char *symbol;
     int addr;

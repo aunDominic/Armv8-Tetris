@@ -8,7 +8,8 @@
 
 INST two_op_inst(char *remainingLine, uint32_t address, Opcode opcode);
 INST multiply_inst(char *remainingLine, uint32_t address, Opcode opcode);
-INST single_op_inst_dest(char *remainingLine, uint32_t address, Opcode opcode);
+INST single_op_inst_alias(char *remainingLine, uint32_t address, Opcode opcode);
+INST wide_move_inst(char *remainingLine, uint32_t address, Opcode opcode);
 INST two_op_nodest_inst(char *remainingLine, uint32_t address, Opcode opcode); // two operands no destination
 
 #endif //DATA_PROCESSING_ASSEMBLY_H

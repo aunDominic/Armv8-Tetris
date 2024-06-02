@@ -18,8 +18,6 @@
 #include "directives.h"
 #include "loadstore.h"
 
-#define MAX_LENGTH 100
-
 bool is_label(const char *line) {
     int i = 0;
 
@@ -70,14 +68,22 @@ INST lineHandler(char *line, uint32_t address) {
         case ADD: case ADDS: case SUB: case SUBS:
         case AND: case ANDS: case BIC: case BICS:
         case EOR: case ORR: case EON: case ORN:
+        case MUL: case MNEG:
             returnVal = two_op_inst(remainingLine, address, opcode);
             break;
 
-        case MOV: case MUL: case MNEG: case NEG: case NEGS: case MVN: case MOVZ: case MOVN: case MOVK:
-            returnVal = single_op_inst_dest(remainingLine, address, opcode);
+        case MOV: case NEG: case NEGS: case MVN:
+            // except for the wide instructions, these are aliases
+            // so just transform them into the two_op_inst
+            returnVal = single_op_inst_alias(remainingLine, address, opcode);
+            break;
+
+        case MOVZ: case MOVN: case MOVK:
+            returnVal = wide_move_inst(remainingLine, address, opcode);
             break;
 
         case CMP: case CMN: case TST:
+            // basically all we have to do is transform them using the zero register to a two_op
             returnVal = two_op_nodest_inst(remainingLine, address, opcode);
             break;
 
@@ -93,12 +99,8 @@ INST lineHandler(char *line, uint32_t address) {
             returnVal = br_inst(remainingLine, address);
             break;
 
-        case STR:
-            returnVal = str_inst(remainingLine, address);
-            break;
-
-        case LDR:
-            returnVal = load_inst(remainingLine, address);
+        case STR: case LDR:
+            returnVal = strload_inst(remainingLine, address, opcode);
             break;
 
         case SPECIAL_INT:

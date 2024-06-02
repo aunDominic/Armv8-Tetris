@@ -33,4 +33,8 @@ add_library(Emulator STATIC
 		src/assemble/loadstore.h
 		src/assemble/data_processing_assembly.c
 		src/assemble/data_processing_assembly.h
+		src/assemble/parsing_common.c
+		src/assemble/parsing_common.h
+		src/assemble/aliases.c
+		src/assemble/aliases.h
 )

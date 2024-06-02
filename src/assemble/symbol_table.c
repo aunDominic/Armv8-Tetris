@@ -31,14 +31,15 @@ void addSymbol(SymbolTable *table, const char *symbol, const int addr) {
     table->size++;
 }
 
-int getValue(const SymbolTable *table, const char *symbol) {
+int32_t getValue(const SymbolTable *table, const char *symbol) {
     for (int i = 0; i < table->size; i++) {
         if (strcmp(table->symbols[i].symbol, symbol) == 0) {
             return table->symbols[i].addr;
         }
     }
     // perror("Symbol_Table symbol not found. Shouldn't happen.\n");
-    return -1; // Symbol not found
+    // printf("%sgetValue attempted match with \n", symbol);
+    return NOT_FOUND; // Symbol not found
 }
 
 void freeSymbolTable(SymbolTable *table) {

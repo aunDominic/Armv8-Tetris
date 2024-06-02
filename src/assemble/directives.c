@@ -4,6 +4,11 @@
 
 #include "directives.h"
 
+#include <stdlib.h>
+
 INST int_directive(char *remainingLine, uint32_t address) {
-    return 80;
+
+    INST returnVal = strtol(remainingLine, NULL, 0);
+
+    return returnVal;
 }

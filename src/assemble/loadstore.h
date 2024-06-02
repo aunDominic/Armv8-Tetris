@@ -9,6 +9,5 @@
 
 // this may need fine-tuning on what exactly the public interface should be
 // for now I'll do generic, and its up to the implementation to define additional functions to help them
-INST str_inst(char *remainingLine, uint32_t address);
-INST load_inst(char *remainingLine, uint32_t address);
+INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode);
 #endif //LOADSTORE_H
