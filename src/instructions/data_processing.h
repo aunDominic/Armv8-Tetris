@@ -42,7 +42,7 @@ struct ArithmeticInstruction {
    ARITHMETIC_SUB = true,
    ARITHMETIC_ADD = false,
   } instruction_type: 1;
- } instruction: 2;
+ } instruction;
 
  /// Tagged union for representing the operand data
  struct {
@@ -76,7 +76,7 @@ struct ArithmeticInstruction {
     /// - true: imm12 will be logically shifted left by 12 bits
     /// - false: imm12 won't be logically shifted left by 12 bits
     bool apply_lsl_imm12: 1;
-   } immediate_operand_value: 23;
+   } immediate_operand_value;
 
    /// Data processing register operand value
    struct {
@@ -113,9 +113,9 @@ struct ArithmeticInstruction {
     /// - if register_width = true (i.e. 64-bit), then the range is 0-63
     /// - if register_width = false (i.e. 32-bit), then the range is 0-31
     u8_t operand: 6;
-   } register_operand_value: 23;
-  } operand_value: 23;
- } operand: 24;
+   } register_operand_value;
+  } operand_value;
+ } operand;
 };
 
 /// A wide-move instruction, a type of (immediate) data processing instruction
@@ -192,7 +192,7 @@ struct LogicalInstruction {
   /// - true: it will be negated
   /// - false: it won't be negated
   bool negate_second_input: 1;
- } instruction: 3;
+ } instruction;
 
  /// The destination register, a 5-bit unsigned immediate value
  /// - 0b00000..0b11110 encodes R0..R30

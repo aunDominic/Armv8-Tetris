@@ -60,7 +60,6 @@ typedef reg_32_t *reg_32_ptr_t;
 /// Constant pointer to a 32-bit value of register, useful for read-only access
 typedef const reg_32_t *const_reg_32_ptr_t;
 
-enum
 // ---- INTERFACE DEFINITIONS ----
 
 // indexed general purpose I/O
