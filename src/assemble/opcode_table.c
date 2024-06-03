@@ -8,11 +8,13 @@
 
 SymbolTable *opcodeTable = NULL;
 
-// make sure to set this to opcodeTable
+// make sure to set this to opcodeTable in main()
 SymbolTable* createOpCodeTable() {
     SymbolTable *table = createSymbolTable();
-    // Add opcodes to the symbol table, yes this is ugly af
-    // there's probably a bette way to do this
+    // Add opcodes to the symbol table, yes this is ugly
+    // however there's no way to allocate this at compile time (to my knowledge)
+    // hence this is done at runtime
+    // think of this like an IR that is just easier to do than lots of strcmp
     addSymbol(table, "add", ADD);
     addSymbol(table, "adds", ADDS);
     addSymbol(table, "sub", SUB);

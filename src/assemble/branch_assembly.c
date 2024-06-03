@@ -11,7 +11,8 @@
 #include "symbol_table.h"
 #include "parsing_common.h"
 
-static uint8_t cond_encoding(Opcode bOpcode) {
+// these are done according to section 1.8
+static uint8_t cond_encoding(const Opcode bOpcode) {
     switch (bOpcode) {
         case B_EQ:
             return 0;
@@ -33,7 +34,7 @@ static uint8_t cond_encoding(Opcode bOpcode) {
     }
 }
 
-INST b_inst(char *remainingLine, uint32_t address) {
+INST b_inst(const char *remainingLine, const uint32_t address) {
     INST instr = 0;
 
     // literally just a literal remaining which is a label or an integer
@@ -58,7 +59,7 @@ INST b_inst(char *remainingLine, uint32_t address) {
 }
 
 // I can definitely refactor this but later on
-INST b_cond(char *remainingLine, uint32_t address, Opcode bOpCode) {
+INST b_cond(const char *remainingLine, const uint32_t address, const Opcode bOpCode) {
     INST instr = 0;
 
     // literally just a literal remaining which is a label or an integer

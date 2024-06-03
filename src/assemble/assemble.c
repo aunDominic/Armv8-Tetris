@@ -9,14 +9,9 @@
 #include "opcode_table.h"
 #include "common_types.h"
 
-#define MAX_LINE_LENGTH 500
-
-// static void binaryWriteFile(FILE *outputFile, uint32_t value);
-
 static uint32_t lineNumber(const uint32_t address) {
     return address / INST_SIZE;
 }
-
 
 int main(const int argc, const char **argv) {
 
@@ -27,6 +22,7 @@ int main(const int argc, const char **argv) {
     FILE *inputFile, *outputFile;
     if (argc != 3) {
         perror("Invalid command line arguments. Should be ./assemble add01.s add01.bin\n");
+        return EXIT_FAILURE;
     }
 
     if ((inputFile = fopen(argv[1], "r")) == NULL) {
@@ -46,7 +42,7 @@ int main(const int argc, const char **argv) {
     // for each line, check if its a label definition
     // then add to symbol table (make a symbol table ADT)
 
-    char buffer[MAX_LINE_LENGTH];
+    char buffer[MAX_LENGTH]; // defined in common_types.h
     uint32_t address = 0;
     while (fgets(buffer, sizeof(buffer), inputFile) != NULL) {
         // make sure the buffer is a proper string

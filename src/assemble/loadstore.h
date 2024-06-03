@@ -7,7 +7,7 @@
 
 #include "common_types.h"
 
-// this may need fine-tuning on what exactly the public interface should be
-// for now I'll do generic, and its up to the implementation to define additional functions to help them
+// str and load are so similar, we don't really need to distinguish between them
 INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode);
+
 #endif //LOADSTORE_H

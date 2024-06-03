@@ -1,5 +1,5 @@
 //
-// Created by terp on 31/05/24.
+// Created by Ahmad Jamsari on 31/05/24.
 //
 
 #include <ctype.h>
@@ -9,8 +9,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// used for parsing string representation of registers in assembly
+#define MAX_REG_LENGTH 10
+
+static Register reg_from_regStr(const char *strReg);
+
 // assumes string is after op_code ie it starts with a known register definition
 // example string this will receive is "x0, x0, #1, lsl #12"
+// remainingLine will skip the character after the comma
 Register handle_register(char **remainingLine) {
 
     // skips any leading whitespace
@@ -28,11 +34,39 @@ Register handle_register(char **remainingLine) {
     return reg_from_regStr(strReg);
 }
 
+// this should only really be called by handle_register as the
+// register string part must be a proper C string ie terminated by NULL_CHAR
+// this is done using strtok_r in handle_register
+static Register reg_from_regStr(const char *strReg) {
+    Register reg;
+    if (*strReg == 'x') {
+        reg.is64Mode = true;
+    } else if (*strReg == 'w') {
+        reg.is64Mode = false;
+    } else {
+        fprintf(stderr, "%s\n", strReg);
+        perror("issue for reg_from_regStr receiving invalid input");
+        exit(EXIT_FAILURE);
+    }
+
+    // now check for zero register
+    if (strcmp(strReg + 1, "zr") == 0) {
+        reg.isZeroReg = true;
+        reg.regNumber = 255; // set a value for debugging purposes
+        return reg;
+    }
+
+    reg.isZeroReg = false;
+    reg.regNumber = atoi(strReg + 1);
+    return reg;
+}
+
+// function used for debugging purposes
 void print_binary(INST number) {
     // Loop through each bit from the most significant to the least significant
     for (int i = 31; i >= 0; i--) {
         // Check if the i-th bit is set
-        unsigned int bit = (number >> i) & 1;
+        uint32_t bit = (number >> i) & 1;
         // Print the bit
         printf("%u", bit);
 
@@ -44,17 +78,19 @@ void print_binary(INST number) {
     printf("\n");
 }
 
-INST modify_instruction(INST instruction, int x, int y, int32_t value) {
+// could change this function so it takes in a INST * instead and return void
+// however i like being more explicit and allows instr to be used as a register by compiler potentially
+INST modify_instruction(INST instruction, const int x, const int y, const int32_t value) {
     // Calculate the number of bits to be modified
 
     assert(x <= y);
-    int num_bits = y - x + 1;
+    int32_t num_bits = y - x + 1;
 
     // printf("value is %u, max_val is %u\n", value, 1 << num_bits);
     assert(value < (1 << num_bits));
 
     // Create a mask for the bits to be modified
-    unsigned int mask = ((1 << num_bits) - 1) << x;
+    uint32_t mask = ((1 << num_bits) - 1) << x;
 
     // Clear the bits in the original instruction
     instruction &= ~mask;
@@ -113,6 +149,8 @@ Shifter determineShift(char *remainingLine) {
     shifter.shiftAmount = imm;
 
     // Determine the shift type
+    // this could be done using our table ADT, however
+    // I really don't want to keep track of any more tables
     if (strcasecmp(shift, "lsl") == 0) {
         shifter.shiftType = LSL;
     } else if (strcasecmp(shift, "lsr") == 0) {
@@ -129,6 +167,9 @@ Shifter determineShift(char *remainingLine) {
     return shifter;
 }
 
+// primarily used for data_processing_assembly.c
+// it's like a form of intermediate representation
+// easy to mess this up but also easy to fix
 OpcodeType get_opcode_type(Opcode opcode) {
     OpcodeType opcodeType;
 
@@ -154,7 +195,7 @@ OpcodeType get_opcode_type(Opcode opcode) {
             opcodeType.isNegated = true;
             break;
         default:
-            printf("get_opcode_type for other opcodes not available yet");
+            fprintf(stderr, "get_opcode_type for other opcodes not available yet");
             // dummy implemenation
             opcodeType.type = MULTIPLY;
             opcodeType.isNegated = false;
@@ -164,15 +205,16 @@ OpcodeType get_opcode_type(Opcode opcode) {
     return opcodeType;
 }
 
-// basically if i have Opcode X1, X2, I need to transform it to
-// Opcode X1, XZR, X2
-// ie inserting XZR to the start
+// basically if i have " R1, R2", I need to transform it to
+// "R1, RZR, R2"
+// ie inserting RZR in the middle
+// make sure instruction is of sufficient length
 void transform_middle(char *instruction) {
     // Create a new string to hold the transformed instruction
     char transformed_instruction[MAX_LENGTH];
 
     // Extract the destination and source registers
-    char Xd[10], Xm[10];
+    char Xd[MAX_REG_LENGTH], Xm[MAX_REG_LENGTH];
     sscanf(instruction, " %s %s", Xd, Xm);
 
     // Format the new instruction as "ORR Xd, XZR, Xm"
@@ -188,12 +230,13 @@ void transform_middle(char *instruction) {
 }
 
 // basically transform X1, X2 to XZR, X1, X2 ie transform the start
+// modifies instruction, make sure instruction is of sufficient length
 void transform_start(char *instruction) {
     // Create a new string to hold the transformed instruction
     char transformed_instruction[MAX_LENGTH];
 
     // Extract the destination and source registers
-    char Xd[10];
+    char Xd[MAX_REG_LENGTH];
     sscanf(instruction, " %s", Xd);
 
     if (Xd[0] == 'x') {
@@ -204,29 +247,5 @@ void transform_start(char *instruction) {
 
     strcat(transformed_instruction, instruction);
     strcpy(instruction, transformed_instruction);
-}
-
-Register reg_from_regStr(const char *strReg) {
-    Register reg;
-    if (*strReg == 'x') {
-        reg.is64Mode = true;
-    } else if (*strReg == 'w') {
-        reg.is64Mode = false;
-    } else {
-        fprintf(stderr, "%s\n", strReg);
-        perror("issue for reg_from_regStr receiving invalid input");
-        exit(EXIT_FAILURE);
-    }
-
-    // now check for zero register
-    if (strcmp(strReg + 1, "zr") == 0) {
-        reg.isZeroReg = true;
-        reg.regNumber = 255; // set a value for debugging purposes
-        return reg;
-    }
-
-    reg.isZeroReg = false;
-    reg.regNumber = atoi(strReg + 1);
-    return reg;
 }
 

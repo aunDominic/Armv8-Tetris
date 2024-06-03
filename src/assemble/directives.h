@@ -7,6 +7,6 @@
 
 #include "common_types.h"
 
-INST int_directive(char *remainingLine, uint32_t address);
+INST int_directive(const char *remainingLine, uint32_t address);
 
 #endif //DIRECTIVES_H

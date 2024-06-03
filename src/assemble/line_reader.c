@@ -44,8 +44,6 @@ bool is_label(const char *line) {
 // there's a case for lineHandler to not take an address and instead the address should be global
 // reduces clarity but might be simpler
 INST lineHandler(char *line, uint32_t address) {
-    // dummy implementation
-    static uint32_t functionCount = 0;
 
     // first step: get opcode first
     char str_opcode[MAX_LENGTH];
@@ -57,7 +55,7 @@ INST lineHandler(char *line, uint32_t address) {
 
     printf("Opcode is %d. Remaining string: %s\n", opcode, remainingLine);
 
-    // now match appropiate opcode to a function,  can do switch or function pointers
+    // now match appropiate opcode to a function, can do switch or function pointers
     // I don't want to populate a huge array again so I'm sticking to massive switch
     INST returnVal = 128; // default value for debugging
     switch (opcode) {
@@ -73,7 +71,7 @@ INST lineHandler(char *line, uint32_t address) {
             break;
 
         case MOV: case NEG: case NEGS: case MVN:
-            // except for the wide instructions, these are aliases
+            // these are aliases
             // so just transform them into the two_op_inst
             returnVal = single_op_inst_alias(remainingLine, address, opcode);
             break;
@@ -110,12 +108,9 @@ INST lineHandler(char *line, uint32_t address) {
         default:
             perror("THIS SHOULDN'T HAPPEN FOR NORMAL USES");
             exit(EXIT_FAILURE);
-            break; // not implemented yet
-
     }
 
     return returnVal;
 
-    // return functionCount++;
 }
 

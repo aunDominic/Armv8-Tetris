@@ -12,7 +12,6 @@
 #include "symbol_table.h"
 #include <string.h>
 
-
 typedef enum {
     POST_INDEX,
     PRE_INDEX,
@@ -22,6 +21,9 @@ typedef enum {
     INVALID
 } AddressingMode;
 
+// slightly inefficient, could use unions
+// but storage is abundant so take advantage of it
+// structs are easier to work with
 typedef struct {
     AddressingMode mode;
     Register Rt;
@@ -32,6 +34,9 @@ typedef struct {
     int32_t literal;
 } ParsedAddress;
 
+// this exists because handle_register skips over the character after the register
+// ie given "x30,a", handle _register will leave the line at 'a' while
+// this will leave the ',' (this is only needed in this one file)
 static Register handle_reg_inplace(char **strReg) {
     Register reg;
     if (**strReg == 'x') {
@@ -40,12 +45,12 @@ static Register handle_reg_inplace(char **strReg) {
         reg.is64Mode = false;
     } else {
         fprintf(stderr, "%s\n", *strReg);
-        perror("issue for reg_from_regStr receiving invalid input");
+        perror("issue for handle_reg_inplace receiving invalid input");
         exit(EXIT_FAILURE);
     }
 
     // now check for zero register
-    if (strcmp(*(strReg) + 1, "zr") == 0) {
+    if (strcmp(*strReg + 1, "zr") == 0) {
         reg.isZeroReg = true;
         reg.regNumber = 255; // set a value for debugging purposes
         return reg;
@@ -56,10 +61,9 @@ static Register handle_reg_inplace(char **strReg) {
     return reg;
 }
 
-AddressingMode parse_addressing_mode(const char *line, ParsedAddress *parsed) {
-    char *remainingLine = strdup(line); // Duplicate the line to avoid modifying the original
-    char *originalLine = remainingLine; // Keep a pointer to free later
-
+// honestly could've made this just return a ParsedAddress instead of a pointer to one
+// I think either one is fine
+void parse_addressing_mode(char *remainingLine, ParsedAddress *parsed) {
     // Initialize ParsedAddress
     parsed->simm = 0;
     parsed->imm = 0;
@@ -68,7 +72,7 @@ AddressingMode parse_addressing_mode(const char *line, ParsedAddress *parsed) {
     // Parse Rt
     parsed->Rt = handle_register(&remainingLine);
 
-    printf("remaining line 1 is %s\n", remainingLine);
+    // printf("remaining line 1 is %s\n", remainingLine);
 
     while (isspace((unsigned char) *remainingLine)) {
         remainingLine++;
@@ -78,8 +82,7 @@ AddressingMode parse_addressing_mode(const char *line, ParsedAddress *parsed) {
     if (*remainingLine == '#') {
         parsed->mode = LITERAL;
         parsed->literal = atoi(remainingLine + 1);
-        free(originalLine);
-        return LITERAL;
+        return;
     }
 
     // labels are handled here
@@ -87,18 +90,19 @@ AddressingMode parse_addressing_mode(const char *line, ParsedAddress *parsed) {
     if (imm != NOT_FOUND) {
         parsed->literal = imm;
         parsed->mode = LITERAL;
-        return LITERAL;
+        return;
     }
 
 
-    // Skip any whitespace and the opening bracket '['
-    while (isspace((unsigned char) *remainingLine) || *remainingLine == '[') {
+    // Skip the opening bracket '['
+    if (*remainingLine == '[') {
         remainingLine++;
     }
 
     // Parse Xn|SP
     parsed->Xn_SP = handle_reg_inplace(&remainingLine);
-    printf("remaining line is %s\n", remainingLine);
+    // printf("remaining line is %s\n", remainingLine);
+
     // Check for closing bracket ']' for POST_INDEX
     if (*remainingLine == ']' && *(remainingLine + 1) == ',') {
         remainingLine += 2;
@@ -111,16 +115,14 @@ AddressingMode parse_addressing_mode(const char *line, ParsedAddress *parsed) {
 
         parsed->mode = POST_INDEX;
         parsed->simm = strtol(remainingLine, NULL, 0);
-        free(originalLine);
-        return POST_INDEX;
+        return;
     }
 
     // check for optional unsigned offset part
     if (*remainingLine == ']') {
         parsed->imm = 0;
         parsed->mode = UNSIGNED_OFFSET;
-        free(originalLine);
-        return UNSIGNED_OFFSET;
+        return;
     }
 
     // Check for unsigned offset now vs register offset vs pre-index
@@ -140,103 +142,22 @@ AddressingMode parse_addressing_mode(const char *line, ParsedAddress *parsed) {
             if (*(rest + 1) == '!') {
                 parsed->mode = PRE_INDEX;
                 parsed->simm = value;
-                free(originalLine);
-                return PRE_INDEX;
+                return;
             }
 
             // now we know its unsigned offset
-            free(originalLine);
             parsed->mode = UNSIGNED_OFFSET;
             parsed->imm = value;
-            return UNSIGNED_OFFSET;
+            return;
         } else {
             parsed->mode = REGISTER_OFFSET;
             parsed->Xm = handle_register(&remainingLine);
-            free(originalLine);
-            return REGISTER_OFFSET;
+            return;
         }
     }
     parsed->mode = INVALID;
-    free(originalLine);
-    return INVALID;
+    return;
 }
-
-// AddressingMode parse_addressing_mode(const char *line, ParsedAddress *parsed) {
-//     char *token;
-//     char line_copy[100];
-//     strcpy(line_copy, line);
-//
-//     // Initialize parsed structure
-//     parsed->mode = INVALID;
-//     parsed->simm = 0;
-//     parsed->imm = 0;
-//     parsed->literal = 0;
-//
-//     // Tokenize the input string
-//     token = strtok(line_copy, " ,[]");
-//     if (token == NULL) return INVALID;
-//
-//     // Parse Rt
-//     parsed->Rt = reg_from_regStr(token);
-//
-//     // Parse the rest of the address
-//     token = strtok(NULL, " ,[]");
-//     if (token == NULL) return INVALID;
-//
-//     // Check if it's an immediate or a label
-//     if (token[0] == '#') {
-//         parsed->literal = strtol(token + 1, NULL, 0);
-//         parsed->mode = LITERAL;
-//         return LITERAL;
-//     }
-//
-//     // check if its a label
-//     int32_t imm = getValue(symbol_table, token);
-//     if (imm != NOT_FOUND) {
-//         parsed->literal = imm;
-//         parsed->mode = LITERAL;
-//         return LITERAL;
-//     }
-//
-//     // Parse Xn|SP
-//     parsed->Xn_SP = reg_from_regStr(token);
-//
-//     // Check for post-index
-//     token = strtok(NULL, " ,[]");
-//     if (token != NULL && token[0] == '#') {
-//         parsed->simm = strtol(token + 1, NULL, 0);
-//         token = strtok(NULL, " ,[]");
-//         if (token == NULL) {
-//             parsed->mode = POST_INDEX;
-//             return POST_INDEX;
-//         }
-//     }
-//
-//     // Check for pre-index
-//     if (token != NULL && strcmp(token, "!") == 0) {
-//         parsed->mode = PRE_INDEX;
-//         return PRE_INDEX;
-//     }
-//
-//     // Check for unsigned offset
-//     if (token == NULL) {
-//         parsed->imm = 0;
-//         parsed->mode = UNSIGNED_OFFSET;
-//         return UNSIGNED_OFFSET;
-//     }
-//
-//     if (token[0] == '#') {
-//         parsed->imm = strtol(token + 1, NULL, 0);
-//         parsed->mode = UNSIGNED_OFFSET;
-//         return UNSIGNED_OFFSET;
-//     }
-//
-//     // Check for register offset
-//
-//     parsed->Xm = reg_from_regStr(token);
-//     parsed->mode = REGISTER_OFFSET;
-//     return REGISTER_OFFSET;
-// }
 
 INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     INST instr = 0;
@@ -253,9 +174,12 @@ INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode) {
         // handle simm19 stuff
 
         printf("parsed.literal is %d\n", parsed.literal);
-        int32_t offset = (parsed.literal - (int32_t) address) / 4; // might need a divide by 4
+        int32_t offset = (parsed.literal - (int32_t) address) / 4;
         instr = modify_instruction(instr, 5, 23, offset);
     } else {
+        // one of the other modes that we need to handle
+
+        // do common things
         instr = modify_instruction(instr, 31, 31, 1);
         instr = modify_instruction(instr, 25, 29, 0x1C);
         instr = modify_instruction(instr, 24, 24, parsed.mode == UNSIGNED_OFFSET ? 1 : 0);
@@ -277,7 +201,7 @@ INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode) {
                 break;
             case UNSIGNED_OFFSET:
                 int32_t imm12 = parsed.Rt.is64Mode ? parsed.imm / 8 : parsed.imm / 4;
-                printf("imm12 for unsigned offset is %d\n", imm12);
+                // printf("imm12 for unsigned offset is %d\n", imm12);
                 instr = modify_instruction(instr, 10, 21, imm12);
                 break;
             default:
@@ -286,5 +210,6 @@ INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode) {
                 exit(EXIT_FAILURE);
         }
     }
+
     return instr;
 }

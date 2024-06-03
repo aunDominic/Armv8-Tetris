@@ -1,5 +1,5 @@
 //
-// Created by terp on 30/05/24.
+// Created by Ahmad Jamsari on 30/05/24.
 //
 
 #ifndef OPCODE_TABLE_H

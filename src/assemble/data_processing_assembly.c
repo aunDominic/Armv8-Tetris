@@ -39,7 +39,7 @@ static uint8_t get_opc_bitwise(Opcode opcode) {
         case ANDS: case BICS:
             return 3;
         default:
-            perror("condition opc in immediate handling in get_opc_arithmetic triggered");
+            perror("condition opc in immediate handling in get_opc_bitwise triggered");
             exit(EXIT_FAILURE);
     }
 }
@@ -64,10 +64,13 @@ INST two_op_inst(char *remainingLine, uint32_t address, Opcode opcode) {
 
     INST instr = 0;
 
-    // honestly could probably just make handle_register return a binary value tbh
+    // could probably just make handle_register return a binary value but its useful
+    // to have an intermediate representation (as its used for other functions)
     Register reg1 = handle_register(&remainingLine);
     Register reg2 = handle_register(&remainingLine);
 
+    // this common idiom could be a function but would have to return a pointer or have char **
+    // which is slightly awkward to use
     while (isspace(*remainingLine)) {
         remainingLine++;
     }
@@ -81,12 +84,11 @@ INST two_op_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     // even though the spec doesn't specify, im gonna assume immediate's can also be specified in hex
     assert((*remainingLine == '#') || (*remainingLine == 'w') || (*remainingLine == 'x'));
 
-    char *rest;
-    if (*remainingLine == '#') {
 
+    if (*remainingLine == '#') {
         // this is super ugly, refactor this whole block into a function later
+        char *rest;
         uint32_t imm = strtoul(remainingLine + 1, &rest, 0);
-        // rest = *rest == ',' ? rest + 1 : rest;
         // guaranteed that we're in ADD, ADDS, SUB, SUBS land: since these are the only
         // ones with immediate operations at this stage
         uint8_t opc = get_opc_arithmetic(opcode);
@@ -125,7 +127,7 @@ INST two_op_inst(char *remainingLine, uint32_t address, Opcode opcode) {
         uint8_t opc = 0;
         OpcodeType opcodeType = get_opcode_type(opcode);
 
-        // can definitely refactor this tbh, there's a lot of things in common
+        // can definitely refactor this tbh for ARITHMETIC AND BITWISE
         // but i just wanted to be explicit rather than things be out of cases
         if (opcodeType.type == ARITHMETIC) {
             opc = get_opc_arithmetic(opcode);
@@ -142,9 +144,7 @@ INST two_op_inst(char *remainingLine, uint32_t address, Opcode opcode) {
             instr = modify_instruction(instr, 10, 15, shifter.shiftAmount);
         } else if (opcodeType.type == MULTIPLY) {
             opc = 0; // is 0 for multiplication
-            // gonna do some guesswork for this one
-            // my assumption is that everythign stays the same execpt operand is 0
-            instr = modify_instruction(instr, 29, 30, opc); // opc
+            instr = modify_instruction(instr, 29, 30, opc); // opc, is unnecessary
             instr = modify_instruction(instr, 28, 28, 1); // M
             instr = modify_instruction(instr , 21, 24, 8); // opr for multiplication
             instr = modify_instruction(instr, 10, 14, 31); // set to zero register
@@ -217,7 +217,7 @@ INST wide_move_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     // remainingLine starts with '#' so skip one over
     uint32_t imm = strtoul(remainingLine + 1, &rest, 0);
 
-    printf("Imm value is %d\n", imm);
+    // printf("Imm value is %d\n", imm);
 
     instr = modify_instruction(instr, 31, 31, rd.is64Mode); // set 31 bit
     uint8_t opc = get_opc_mov(opcode);
@@ -226,7 +226,7 @@ INST wide_move_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     instr = modify_instruction(instr, 26, 28, 4); // common immediate stuff
     instr = modify_instruction(instr, 23, 25, 5); // opi
 
-    printf("wide_mov_inst immediate value %d\n", imm);
+    // printf("wide_mov_inst immediate value %d\n", imm);
     instr = modify_instruction(instr, 5, 20, imm);
     instr = modify_instruction(instr, 0, 4, reg_to_binary(rd));
 
