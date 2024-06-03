@@ -23,8 +23,6 @@ struct PSTATE{
 };
 extern BYTE memory[memSize];
 extern struct PSTATE pstate;
-INST getInstAtAddr(int addr);
-INST fetch();
 void printMemory(int start, int end);
 void printRegisters();
 #endif //EMULATOR_REGISTERS_C
