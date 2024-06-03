@@ -13,6 +13,7 @@ typedef int32_t INST;
 #define memSize (1 << 21)
 extern const int32_t HALT;
 extern int64_t registers[regCount];
+
 extern int64_t programCounter;
 extern int64_t zeroRegister;
 struct PSTATE{
@@ -23,6 +24,8 @@ struct PSTATE{
 };
 extern BYTE memory[memSize];
 extern struct PSTATE pstate;
+INST getInstAtAddr(int addr);
+INST fetch();
 void printMemory(int start, int end);
 void printRegisters();
 #endif //EMULATOR_REGISTERS_C

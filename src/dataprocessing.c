@@ -3,6 +3,17 @@
 //
 
 #include "dataprocessing.h"
+#include <stdio.h>
+// If you need more helper functions, use static functions
+#include <stdio.h>
+#include <assert.h>
+#define ZERO_REGISTER 31      // Defining Zero Register
+typedef enum {
+    LSL = 0b00,
+    LSR = 0b01,
+    ASR = 0b10,
+    ROR = 0b11
+} ShiftType; // Enumeration for shift types
 
 //Extraction Functions - test passed
 static uint32_t extractBits(INST instruction, int start, int end) {

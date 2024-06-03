@@ -101,17 +101,3 @@ bool loadLiteralHandler(INST instruction){
 
     return true; // errors
 }
-int main(){
-    printf ("%lld\n", binaryToDecimal("111"));
-    registers[3] = 1; // third register holds 1
-    registers[4] = 5;
-    // 64 bit, immediate offset 123, from register 3, taken the data from register 3
-    memory[988] = 1;
-    INST uload64 = SDTconstructer(1,1,1, 123, 3, 4);
-    // Desired effect: memory[R3 + 123 * 8] = 5
-
-    singleDataTransferHandler(uload64);
-    printMemory(970, 990);
-    printRegisters();
-
-}
