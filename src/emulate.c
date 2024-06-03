@@ -1,197 +1,82 @@
-//
-// Created by Ahmad Jamsari on 29/05/2024.
-//
-
-// Loads binary data, then emulates the execution and fetch cycle
-#include <stdio.h>
-#include "memory.h"
-#include <stdlib.h>
 #include <assert.h>
-#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-static void readFile(FILE *inputFile);
+#include "emulate/memory.h"
+#include "emulate/registers.h"
 
-// should be able to handle both stdoutput and file
-static void outputHandler(FILE *outputFile);
+void output_handler(FILE *output_file) {
+    const char *text = "LOREM IPSUM dolor sit amet, consectetur adipiscing elit.\n";
+    fputs(text, output_file);
+}
 
-// honestly the rest of these static functions could be their separate file
-// but up to you guys
-static void execute(); // executes the code using the instructions in memory
+int run_emulation() {
+    do {
+        // 1: FETCH
+        // read the binary instruction that PC points to
+        u32_t binary_instruction;
+        switch (emulator_memory_read_binary_instruction(reg_PC_read(), &binary_instruction)) {
+            case READ_BINARY_INSTRUCTION_RESULT_NULL_PTR_ERROR:
+                perror("An erroneous null pointer error occured, that pointer should never be null");
+                abort();
+            case READ_BINARY_INSTRUCTION_RESULT_ALIGNMENT_ERROR:
+                perror("An erroneous alignment error occured, PC should never be un-aligned");
+                abort();
+            // TODO: gracefully handle this branch in the future
+            case READ_BINARY_INSTRUCTION_RESULT_OUT_OF_BOUNDS_ERROR:
+                perror("PC instruction out of bounds. TODO: gracefully handle this in the future");
+                abort();
+            case READ_BINARY_INSTRUCTION_RESULT_SUCCESS:
+                // do nothing for the success case
+                break;
+        }
 
-// this function should determine the instruction type
-// then call the relevant instruction handler (from one of the holder files)
-// could use a better name. ie it routes it to smth that knows how to handle it
-// this will hopefully be called from execute()
-// instructionHandler might use instFromAddress(PC) as a parameter
-static void instructionHandler(INST instruction);
+        // 2. DECODE
+        //
+    } while (true);
+}
 
-// should read the next 4 bytes starting at PC
-// depending on the ordering used by the instruction handlers,
-// this function may need to be changed
-// could use bit manipulation to place the 4 bytes in the right order
-INST instFromAddress(int64_t programCounter, bool isLittle);
+int main(const int argc, char *argv[]) {
+    printf("%d", argc);
 
-
-int main(const int argc, char **argv){
-
-    // Binary Loader
-    // Reads 4 bytes as an INST
-    // Identifies INST as 1 of the 5 possible instructions
-    // Passes them to the relevant modules that handles the instruction
-    // Eg. Data processing, Data Transfer, Branch etc
-    // Each instruction handler should return a bool indicating success
-    // Errors are handled here.
-
-    // Binary Loader start, handle command line arguments
-    FILE *inputFile, *outputFile = stdout;
-    // default outputFile to stdout
-
-    if ((inputFile = fopen(argv[1], "rb")) == NULL) {
-        perror("Error opening input file");
+    // check for the right number of arguments, has to be 2 or 3
+    if (argc != 2 && argc != 3) {
+        fprintf(stderr, "Usage: `%s <file_in>` or `%s <file_in> <file_out>`\n", argv[0], argv[0]);
         return EXIT_FAILURE;
     }
 
-    if (argc == 3) {
-        // have 2 arguments, still need to check the files are valid
-        // check outputFile
-        if ((outputFile = fopen(argv[2], "w")) == NULL) {
-            perror("Error opening output file");
-            return EXIT_FAILURE;
-        }
+    // read binary from input file, into emulator memory
+    FILE *input_file = fopen(argv[1], "rb"); // "rb" means read binary
+    const enum WriteFileResult write_file_result = emulator_memory_write_file(input_file, 0);
+    switch (write_file_result) {
+        case WRITE_FILE_RESULT_NULL_PTR_ERROR:
+            perror("Error opening input file");
+            break;
+        case WRITE_FILE_RESULT_OUT_OF_BOUNDS_ERROR:
+        case WRITE_FILE_RESULT_IO_ERROR:
+            perror(write_file_result == WRITE_FILE_RESULT_OUT_OF_BOUNDS_ERROR
+                       ? "Input file too large"
+                       : "Error reading from file");
+        // fall-through to SUCCESS for closing the file
+        case WRITE_FILE_RESULT_SUCCESS: fclose(input_file);
+    }
+    if (write_file_result != WRITE_FILE_RESULT_SUCCESS) return EXIT_FAILURE;
+
+    // open the output file, if specified - default to stdout if not
+    FILE *output_file = stdout;
+    if (argc == 3 && (output_file = fopen(argv[2], "w")) == NULL) {
+        perror("Error opening output file");
+        return EXIT_FAILURE;
     }
 
-    readFile(inputFile);
+    // execute emulator
+    run_emulation();
 
-    // execute should be a loop
-    execute();
+    // program finished, write output
+    output_handler(output_file);
 
-    // program finished running so output the file
-    outputHandler(outputFile);
-
-
-    printf("Emulating running\n");
-    fclose(inputFile);
-    fclose(outputFile);
+    // release resources, and exit
+    if (output_file != stdout) fclose(output_file);
     return EXIT_SUCCESS;
 }
 
-// reads the inputFile and it will attempt to read over memory
-// returns void cus I'll probably just do exit();
-static void readFile(FILE *inputFile) {
-    fseek(inputFile, 0L, SEEK_END);
-    size_t fileSize = ftell(inputFile); // basically returns the size of file in bytes
-    rewind(inputFile); // put file pointer to start
-    size_t bytesRead = fread(memory, 1, fileSize, inputFile); // reads file into memory
-    assert(bytesRead == fileSize); // ensures it read enough bytes
-}
-
-
-// could be nice to make a function that prints out 64 bit vs 32 bit values
-// in the same format
-static void outputHandler(FILE *outputFile) {
-    printf("outputHandler is called. TODO() \n");
-    fprintf(outputFile, "Registers:\n");
-
-    // now print out registers
-    // TO CHANGE: CHANGE 31 TO A MACRO
-    for (int i = 0; i < 31; i++) {
-        // uses cool string concatenation feature in C, look it up if you're skeptical
-        fprintf(outputFile, "X%.2d = %16.16" PRIx64 "\n", i, registers[i]);
-    }
-
-    // print out PC now
-    fprintf(outputFile, "PC = ");
-    fprintf(outputFile, "%16.16" PRIx64 "\n", programCounter);
-
-    // END PC
-
-    // print out PSTATE, the following code is very ugly
-    // someone can make a macro that does this - but less portable
-    // even making pState an integer or array
-    // would help a lot
-    fprintf(outputFile, "PSTATE : ");
-
-    if (pstate.N) {
-        fprintf(outputFile, "N");
-    } else {
-        fprintf(outputFile, "-");
-    }
-
-    if (pstate.Z) {
-        fprintf(outputFile, "Z");
-    } else {
-        fprintf(outputFile, "-");
-    }
-
-    if (pstate.C) {
-        fprintf(outputFile, "C");
-    } else {
-        fprintf(outputFile, "-");
-    }
-
-    if (pstate.V) {
-        fprintf(outputFile, "V");
-    } else {
-        fprintf(outputFile, "-");
-    }
-
-    fprintf(outputFile, "\n");
-
-    // PSTATE DONE
-
-    // memory printing time
-    // I can already seeing this code having similarities to execute
-    fprintf(outputFile, "Non-zero memory:\n");
-
-
-    for (int32_t address = 0; address < (1 << 21) - 4; address += 4) {
-        // use instFromAddress as this is exactly what we want
-        const INST valAtAddress = instFromAddress(address, true);
-        if (valAtAddress != 0) {
-            // yes this looks like hell and yes PRIx32 is portable, it lives in
-            // inttypes.h
-            fprintf(outputFile, "0x%8.8" PRIx32 ": %8.8" PRIx32 "\n", address, valAtAddress);
-        }
-    }
-
-
-}
-
-static void execute() {
-    printf("Default execute function called. TODO()\n");
-    // should be a loop
-    // should call instructionHandler()
-}
-
-
-static void instructionHandler(INST instruction) {
-    printf("Instruction handler called. TODO()\n");
-}
-
-// isLittle is there for littleEndian Mode
-INST instFromAddress(const int64_t programCounter, const bool isLittle) {
-    assert(programCounter <= ((1 << 21) - 4)); // ideally we have a macro for 1 << 21 or 21
-    BYTE byte1 = memory[programCounter];
-    BYTE byte2 = memory[programCounter+1];
-    BYTE byte3 = memory[programCounter+2];
-    BYTE byte4 = memory[programCounter+3];
-
-    // default implementation is just to interpret these as is
-    // ie default is little-endian
-    INST instruction = 0;
-    // now perform bitwise manipulation
-
-    if (isLittle) {
-        instruction |= (INST) byte4 << 24;
-        instruction |= (INST) byte3 << 16;
-        instruction |= (INST) byte2 << 8;
-        instruction |= (INST) byte1;
-    } else {
-        instruction |= (INST) byte1 << 24;
-        instruction |= (INST) byte2 << 16;
-        instruction |= (INST) byte3 << 8;
-        instruction |= (INST) byte4;
-    }
-
-    return instruction;
-}

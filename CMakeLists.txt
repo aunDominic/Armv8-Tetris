@@ -1,21 +1,19 @@
 cmake_minimum_required(VERSION 3.28)
-project(Emulator C)
+project(myarm_v8 C)
 
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 23)
 
-add_library(Emulator STATIC
-        src/memory.h
-        src/memory.c
-        src/dataprocessing.c
-        src/dataprocessing.h
-        src/shifter.c
-        src/shifter.h
-        src/datatransfer.c
-        src/datatransfer.h
-        src/branch.c
-        src/branch.h
-        src/special.c
-        src/special.h
-		src/assemble/assemble.c
-		src/emulate.c
-)
+add_executable(myarm_v8
+        src/assemble.c
+        src/emulate.c
+        src/emulate/memory.h
+        src/emulate/memory.c
+        src/emulate/registers.c
+        src/types.h
+        src/emulate/registers.h
+        src/util.h
+        src/util.c
+        src/instruction_set.h
+        src/instruction_set.c
+        src/instructions/data_processing.h
+        src/instructions/data_processing.c)

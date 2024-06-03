@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Emulator.iml" filepath="$PROJECT_DIR$/.idea/Emulator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/myarm_v8.iml" filepath="$PROJECT_DIR$/.idea/myarm_v8.iml" />
     </modules>
   </component>
 </project>
