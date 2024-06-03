@@ -23,7 +23,7 @@
 #assemble
 
 build/
-
+armv8_testsuite/
 #ignore junk files from compiling Haskell code
 *.hi
 
@@ -53,4 +53,5 @@ build/
 
 # Ignore build artifacts
 cmake-build-debug/
+
 
