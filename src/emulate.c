@@ -78,6 +78,8 @@ int main(const int argc, char **argv){
 }
 
 // reads the inputFile and it will attempt to read over memory
+// honestly might be better for this to both take a path, open the file
+// and also close the file
 // returns void cus I'll probably just do exit();
 static void readFile(FILE *inputFile) {
     fseek(inputFile, 0L, SEEK_END); // Sets file pointer to the end

@@ -18,4 +18,23 @@ add_library(Emulator STATIC
         src/special.h
 		src/assemble/assemble.c
 		src/emulate.c
+		src/assemble/symbol_table.h
+		src/assemble/symbol_table.c
+		src/assemble/line_reader.h
+		src/assemble/line_reader.c
+		src/assemble/opcode_table.h
+		src/assemble/opcode_table.c
+		src/assemble/directives.c
+		src/assemble/directives.h
+		src/assemble/common_types.h
+		src/assemble/branch_assembly.c
+		src/assemble/branch_assembly.h
+		src/assemble/loadstore.c
+		src/assemble/loadstore.h
+		src/assemble/data_processing_assembly.c
+		src/assemble/data_processing_assembly.h
+		src/assemble/parsing_common.c
+		src/assemble/parsing_common.h
+		src/assemble/aliases.c
+		src/assemble/aliases.h
 )
