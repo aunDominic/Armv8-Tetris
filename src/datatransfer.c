@@ -35,9 +35,11 @@ static INST SDTconstructer(int SF, int U, int L, int offset, int xn, int rt){
     return (1 << 31) + (SF << 30) + (1 << 29) + (1 << 28) + (1 << 27) + (U << 24) + (L << 22) + (offset << 10) + (xn << 5) + rt;
 
 }
-
+#define isRegisterOffset(instruction) ((extractBits(instruction, 10, 15) == 26) && (extractBits(instruction, 21, 21) == 1))
+#define isIndexed(instruction) ((extractBits(instruction, 10, 10) == 1) && (extractBits(instruction, 21, 21) == 0))
 static int64_t getAddress(INST instruction){
-    uint32_t XN = extractBits(instruction, 5, 9);
+    int64_t XN = extractBits(instruction, 5, 9);
+    int32_t XM = extractBits(instruction, 16, 20);
     int64_t simm9 = sign_extend(extractBits(instruction, 12, 20), 9);
 
     // these may not be mutually exclusive
@@ -53,33 +55,40 @@ static int64_t getAddress(INST instruction){
 
         return registers[XN] + uoffset;
     }
-    if (I){
-        return registers[XN] + simm9;
-    } else {
-        int64_t ret = registers[XN];
-        registers[XN] += simm9;
-        return ret;
+    if (isIndexed(instruction)){
+        if (I){
+            return registers[XN] += simm9;
+        } else {
+            int64_t ret = registers[XN];
+            registers[XN] += simm9;
+            return ret;
+        }
+    }
+    if (isRegisterOffset(instruction)){
+        return registers[XN] + registers[XM];
     }
 }
 static void loadStoreHandler(ADDR addr, INST instruction){
     int rt = (int) extractBits(instruction, 0, 4);
     printf("rt: %d\n", rt);
     int n_addr;
-    if (U) n_addr = 4;
-    else n_addr = 8;
+    if (SF) n_addr = 8;
+    else n_addr = 4;
     if (L){
-        printf("L: %d\n", L);
+        printf("Loading from memory...\n", L);
         int64_t bytes = 0;
         for (int i = 0; i < n_addr; i++){
-            printf("Memory[%d]: %d\n", addr, memory[addr + i]);
-            bytes += memory[addr + i] << (i * 8);
+            printf("Memory[%d]: %x\n", addr + i, memory[addr + i]);
+            int64_t byte = (int64_t) memory[addr + i] << (i * 8);
+            printf("Loading byte into correct positions: %llx. ", byte);
+            bytes |= byte;
         }
         registers[rt] = bytes;
     } else { // store
-        printf("L: %d\n", L);
+        printf("Storing into memory.\n");
 
         for (int i = 0; i < n_addr; i++){
-            memory[addr] = (BYTE) extractBits(registers[rt], i * 8, (i+1) * 8 - 1);
+            memory[addr + i] = (BYTE) extractBits(registers[rt], i * 8, (i+1) * 8 - 1);
         }
     }
 }
@@ -88,16 +97,36 @@ bool singleDataTransferHandler(INST instruction){
     // Format: 1 sf 1110 0U0L offset xn rt
     // rt -> target register
     // xn -> base register (stores address)
+    printf("SDT called.\n");
     setFlags(instruction);
     ADDR addr = getAddress(instruction);
+    assert((addr <= memSize - 4) && "Error: Memory out of bounds");
     printf("Address at %d\n", addr);
     loadStoreHandler(addr, instruction);
     return true; // errors
 }
 bool loadLiteralHandler(INST instruction){
+    printf("Load Literal called.\n");
+    setFlags(instruction);
+    int rt = (int) extractBits(instruction, 0, 4);
     int64_t simm19 = sign_extend(extractBits(instruction, 5, 23), 19);
     ADDR addr = programCounter + simm19 * 4;
+    assert((addr <= memSize - 4) && "Error: Memory out of bounds");
+    L = true;
     loadStoreHandler(addr, instruction);
-
     return true; // errors
 }
+//int main(){
+//    printf ("%lld\n", binaryToDecimal("111"));
+//    registers[3] = 1; // third register holds 1
+//    registers[4] = 5;
+//    // 64 bit, immediate offset 123, from register 3, taken the data from register 3
+//    memory[988] = 1;
+//    INST uload64 = SDTconstructer(1,1,1, 123, 3, 4);
+//    // Desired effect: memory[R3 + 123 * 8] = 5
+//
+//    singleDataTransferHandler(uload64);
+//    printMemory(970, 990);
+//    printRegisters();
+//
+//}
