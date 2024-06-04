@@ -4,20 +4,20 @@ project(Emulator C)
 set(CMAKE_C_STANDARD 99)
 
 add_library(Emulator STATIC
-        src/memory.h
-        src/memory.c
-        src/dataprocessing.c
-        src/dataprocessing.h
-        src/shifter.c
-        src/shifter.h
-        src/datatransfer.c
-        src/datatransfer.h
-        src/branch.c
-        src/branch.h
-        src/special.c
-        src/special.h
+		src/emulate/memory.h
+		src/emulate/memory.c
+		src/emulate/dataprocessing.c
+		src/emulate/dataprocessing.h
+		src/emulate/shifter.c
+		src/emulate/shifter.h
+		src/emulate/datatransfer.c
+		src/emulate/datatransfer.h
+		src/emulate/branch.c
+		src/emulate/branch.h
+		src/emulate/special.c
+		src/emulate/special.h
 		src/assemble/assemble.c
-		src/emulate.c
+		src/emulate/emulate.c
 		src/assemble/symbol_table.h
 		src/assemble/symbol_table.c
 		src/assemble/line_reader.h
@@ -35,6 +35,4 @@ add_library(Emulator STATIC
 		src/assemble/data_processing_assembly.h
 		src/assemble/parsing_common.c
 		src/assemble/parsing_common.h
-		src/assemble/aliases.c
-		src/assemble/aliases.h
 )
