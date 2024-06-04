@@ -7,6 +7,7 @@
 // If you need more helper functions, use static functions
 #include <stdio.h>
 #include <assert.h>
+#include "bitmanipulation.h"
 #define ZERO_REGISTER 31      // Defining Zero Register
 typedef enum {
     LSL = 0b00,
@@ -14,18 +15,40 @@ typedef enum {
     ASR = 0b10,
     ROR = 0b11
 } ShiftType; // Enumeration for shift types
+// could change this function so it takes in a INST * instead and return void
+// however i like being more explicit and allows instr to be used as a register by compiler potentially
+// From assemble.c
+static int64_t modify_bits(int64_t bits, const int64_t x, const int64_t y, const int64_t value) {
+    // Calculate the number of bits to be modified
 
-//Extraction Functions - test passed
-static uint32_t extractBits(INST instruction, int start, int end) {
-    assert(start <= end);
-    uint32_t mask;
-    if (end - start == 31) {
-        mask = 0xFFFFFFFF; // Mask for all 32 bits
-    } else {
-        mask = ((1U << (end - start + 1)) - 1) << start;
-    }
-    return (instruction & mask) >> start;
+    assert(x <= y);
+    int64_t num_bits = y - x + 1;
+
+    // printf("value is %u, max_val is %u\n", value, 1 << num_bits);
+    assert(value < (1LL << num_bits));
+
+    // Create a mask for the bits to be modified
+    uint64_t mask = ((1LL << num_bits) - 1) << x;
+
+    // Clear the bits in the original instruction
+    bits &= ~mask;
+
+    // Set the new value in the cleared bits
+    bits |= (value << x) & mask;
+
+    return bits;
 }
+//Extraction Functions - test passed
+//static uint32_t extractBits(INST instruction, int start, int end) {
+//    assert(start <= end);
+//    uint32_t mask;
+//    if (end - start == 31) {
+//        mask = 0xFFFFFFFF; // Mask for all 32 bits
+//    } else {
+//        mask = ((1U << (end - start + 1)) - 1) << start;
+//    }
+//    return (instruction & mask) >> start;
+//}
 static bool patternMatch(INST bits, INST pattern) {
     return bits == pattern;
 }
@@ -37,7 +60,8 @@ static void writeReg(int reg, int64_t signedVal, int mode) {
         return;
     } else {
         printf("writing value %lld to register %d in %d mode\n", signedVal, reg, mode); //r
-        registers[reg] = (mode) ? signedVal : (int32_t)signedVal;
+        registers[reg] = (mode) ? signedVal : ((1LL << 32) - 1) & signedVal;
+
         return;
     }
 }
@@ -52,23 +76,54 @@ static int64_t readReg(int reg, int mode) {
 }
 
 //Shifter Functions - test passed
+// Mode 1 -> 64 bit
+// 0 -> 32 bit
 static int64_t lsl(int64_t value, int shift_amount, int mode) {
-    int64_t result = value << shift_amount;
-    result = (mode) ? result : (int64_t)(uint32_t)result;
-    return result;
+    if (mode) {
+        return value << shift_amount;
+    } else {
+        value &= ((1LL << 32) - 1);
+        int64_t result = value << shift_amount;
+        result = ((1LL << 32) - 1) & result;
+        return result;
+    }
+
 }
-static int64_t lsr(int64_t value, int shift_amount, int mode) {
-    int64_t result = (uint64_t)value >> shift_amount;
-    result = (mode) ? result : (int64_t)(uint32_t)result;
-    return result;
+static int64_t lsr(uint64_t value, int shift_amount, int mode) {
+    if (mode) {
+        return (int64_t) (value >> shift_amount);
+    } else {
+        value &= ((1LL << 32) - 1);
+        int64_t result = value >> shift_amount;
+        result = ((1LL << 32) - 1) & result;
+        return result;
+    }
 }
+//static int64_t asr(int64_t value, int shift_amount, int mode) {
+//    if (mode) {
+//        return value >> shift_amount;
+//    } else {
+//        value &= ((1LL << 32) - 1);
+//        int64_t result = value >> shift_amount;
+//        result = ((1LL << 32) - 1) & result;
+//        return result;
+//    }
+//}
 static int64_t asr(int64_t value, int shift_amount, int mode) {
     switch (mode) {
         case 0: {
-            int signBit32 = (value >> 31) & 1;
-            value >>= shift_amount;
-            int32_t signExtension32 = (signBit32) ? -1LL << (32 - shift_amount) : 0;
-            return (uint32_t)(value | signExtension32);
+            shift_amount &= 0x1f;
+            uint32_t uval = (uint32_t)value;
+            uint32_t result = (uval >> shift_amount) | -((uval & 0x80000000) >> shift_amount);
+            return (int32_t)result;
+
+
+//            value &= ((1LL << 32) - 1);
+//            int64_t signBit32 = (value >> 31) & 1;
+//            value >>= shift_amount;
+//            int64_t signExtension32 = (signBit32) ? -1LL << (32 - shift_amount) : 0b0;
+//            printf("asr here!\n");
+//            return ((1LL << 32) - 1) & (value | signExtension32);
         }
         case 1: {
             int signBit64 = (value >> 63) & 1;
@@ -80,13 +135,20 @@ static int64_t asr(int64_t value, int shift_amount, int mode) {
             return value;
     }
 }
-static int64_t ror(int64_t value, int shift_amount, int mode) {
+static int64_t ror(uint64_t value, int shift_amount, int mode) {
     shift_amount %= (mode ? 64 : 32);
+    printf("ror\n");
+
+    uint64_t fir = value >> shift_amount;
+    uint64_t sec =  (value << (64 - shift_amount));
+    uint64_t res = fir | sec;
     switch (mode) {
         case 0:
-            return (uint32_t)((value >> shift_amount) | (value << (32 - shift_amount)));
+            value &= ((1LL << 32) - 1);
+            return ((value >> shift_amount) | (value << (32 - shift_amount))) & ((1LL << 32) - 1);
         case 1:
-            return (value >> shift_amount) | (value << (64 - shift_amount));
+            printf("ROR %llx: %llx %llx %llx", value, fir, sec, res);
+            return res;
         default:
             return value;
     }
@@ -103,15 +165,21 @@ static void updateFlags(int64_t a, int64_t b, int64_t result, int opc, int mode)
     } Code;
 
     pstate.N = (mode) ? (extractBits(result, 63, 63)) : (extractBits(result, 31, 31));
-    pstate.Z = result == 0;
+    pstate.Z = (mode) ? result == 0 : (((1LL << 32) - 1) & result) == 0 ;
+    printf("Result: %llx\n", result);
+    printf("N Flag: %d\n", pstate.N);
 
     switch ((Code)opc) {
 
         case ADDS: {
+            pstate.C = (uint64_t) result < (uint64_t) a;
+            pstate.V = ((a < 0 == b < 0) && (result < 0 != a < 0));
             break;
         }
 
         case SUBS: {
+            pstate.C = !((uint64_t) a < (uint64_t) b);
+            pstate.V = ((a < 0 != b < 0) && (result < 0 == b < 0));
             break;
         }
 
@@ -134,7 +202,7 @@ static void updateFlags(int64_t a, int64_t b, int64_t result, int opc, int mode)
 
 //Immediate Processor Logic Below
 static bool arithmeticImmInstProcessor(INST instruction) { //Unsure about how to set flags
-
+    printf("Arithmetic immediate...\n");
     typedef enum {
         ADD = 0b00,
         ADDS = 0b01,
@@ -146,10 +214,10 @@ static bool arithmeticImmInstProcessor(INST instruction) { //Unsure about how to
     int sf        = extractBits(instruction, 31, 31);
     int opc       = extractBits(instruction, 29, 30);
     int shiftFlag = extractBits(instruction, 22, 22);
-    int imm12     = (shiftFlag) ? 0 : extractBits(instruction, 10,21);
+    int imm12     = extractBits(instruction, 10,21);
     int rnI        = extractBits(instruction, 5, 9);
     int rdI        = extractBits(instruction, 0, 4);
-
+    if (shiftFlag) imm12 <<= 12;
     //Values for Arithmetic Instruction
     int64_t rn  = readReg(rnI, sf);
     int64_t op2 = imm12;
@@ -157,26 +225,26 @@ static bool arithmeticImmInstProcessor(INST instruction) { //Unsure about how to
     //Action
     switch ((Code) opc) {
         case ADD: {
-            printf("this is an add immediate instruction\n"); //r
+            printf("add called\n"); //r
             int64_t result = rn + op2;
             writeReg(rdI, result, sf);
             break;
         }
         case ADDS: {
-            printf("this is an add immediate instruction and updating cond flags\n"); //r
+            printf("adds called\n"); //r
             int64_t result = rn + op2;
             writeReg(rdI, result, sf);
             updateFlags(rn, op2, result, opc,  sf);
             break;
         }
         case SUB: {
-            printf("this is an sub imm instruction\n"); //r
+            printf("sub called\n"); //r
             int64_t result = rn - op2;
             writeReg(rdI, result, sf);
             break;
         }
         case SUBS: {
-            printf("this is a sub imm ins and update c flags\n"); //r
+            printf("subs called\n"); //r
             int64_t result = rn - op2;
             writeReg(rdI, result, sf);
             updateFlags(rn, op2, result, opc,  sf);
@@ -188,7 +256,7 @@ static bool arithmeticImmInstProcessor(INST instruction) { //Unsure about how to
 
 }
 static bool wideMoveImmInstProcessor(INST instruction) {
-    printf("this is a wide move immediate instruction processor!\n"); //r
+    printf("Wide Move IMM called...\n"); //r
 
     typedef enum {
         MOVN = 0b00,
@@ -199,7 +267,7 @@ static bool wideMoveImmInstProcessor(INST instruction) {
     int sf    = extractBits(instruction, 31, 31);
     int opc   = extractBits(instruction, 29, 30);
     int hw    = extractBits(instruction, 21, 22); assert(patternMatch(hw, 0b00) || patternMatch(hw, 0b01) || sf);
-    uint16_t imm16 = extractBits(instruction, 5, 20);
+    int64_t imm16 = extractBits(instruction, 5, 20);
     int rdI    = extractBits(instruction, 0, 4);
 
     int shiftValue = hw * 16;
@@ -214,16 +282,16 @@ static bool wideMoveImmInstProcessor(INST instruction) {
             break;
         }
         case MOVZ: {
-            printf("movz - value: %llu - register.no: %d - mode: %d\n", op, rdI, sf); //r
+            printf("movz - value: %llu - register.no: %x - mode: %d\n", op, rdI, sf); //r
             writeReg(rdI, op, sf);
             break;
         }
         case MOVK: {
-            uint64_t mask = (uint64_t)0xFFFF << shiftValue;
-            int64_t rd = readReg(rdI, 1);
-            rd &= ~mask;
-            int64_t result = rd || op;
-            printf("movk - value: %lld - register.no: %d - mode: %d\n", result, rdI, sf); //r
+            printf("Shift value: %d\n", shiftValue);
+            printf("Register: %llx\n", registers[rdI]);
+            int64_t result = modify_bits(registers[rdI],shiftValue, shiftValue + 15, imm16);
+            printf("Result: %llx\n", result);
+
             writeReg(rdI, result, sf);
             break;
         }
@@ -234,7 +302,7 @@ static bool wideMoveImmInstProcessor(INST instruction) {
 
 //Register Processor Logic Below
 static bool multiplyRegInstProcessor(INST instruction) {
-    printf("this is a processor for multiply insturctions with reg val\n");
+    printf("MultiplyReg Called!\n");
 
     typedef enum {
         MADD = 0b0,
@@ -249,7 +317,7 @@ static bool multiplyRegInstProcessor(INST instruction) {
     int rnI = extractBits(instruction, 5, 9);
     int rdI = extractBits(instruction, 0, 4);
 
-    assert(~patternMatch(rdI, 31));
+//    assert(!patternMatch(rdI, 31));
 
     // Read the values from the registers, handling zero register cases
     int64_t ra = readReg(raI, sf);
@@ -278,7 +346,7 @@ static bool multiplyRegInstProcessor(INST instruction) {
 
 }
 static bool arithmeticRegInstProcessor(INST instruction) {
-    printf("this is a processor for arithmeticRegInstProcessor\n");
+    printf("Arithmetic instruction...\n");
 
     typedef enum {
         ADD = 0b00,
@@ -297,7 +365,7 @@ static bool arithmeticRegInstProcessor(INST instruction) {
     int rdI = extractBits(instruction, 0, 4);
 
     // Check if destination register is invalid
-    assert(!patternMatch(rdI, 0b11111));
+//    assert(!patternMatch(rdI, 0b11111));
 
     // Read the values from the registers
     int64_t rm = readReg(rmI, sf);
@@ -308,16 +376,16 @@ static bool arithmeticRegInstProcessor(INST instruction) {
     switch ((ShiftType)shiftType) {
         case LSL:
             operand2 = lsl(rm, shiftAmount, sf);
-        break;
+            break;
         case LSR:
             operand2 = lsr(rm, shiftAmount, sf);
-        break;
+            break;
         case ASR:
             operand2 = asr(rm, shiftAmount, sf);
-        break;
+            break;
         case ROR:
             operand2 = ror(rm, shiftAmount, sf);
-        break;
+            break;
         default:
             return false;
     }
@@ -325,26 +393,26 @@ static bool arithmeticRegInstProcessor(INST instruction) {
     //Action
     switch ((Code) opc) {
         case ADD: {
-            printf("this is an add register instruction\n"); //r
+            printf("add called!\n"); //r
             int64_t result = rn + operand2;
             writeReg(rdI, result, sf);
             break;
         }
         case ADDS: {
-            printf("this is an add register instruction and updating cond flags\n"); //r
+            printf("adds called!\n"); //r
             int64_t result = rn + operand2;
             writeReg(rdI, result, sf);
             updateFlags(rn, operand2, result, opc,  sf);
             break;
         }
         case SUB: {
-            printf("this is an sub register instruction\n"); //r
+            printf("sub called!\n"); //r
             int64_t result = rn - operand2;
             writeReg(rdI, result, sf);
             break;
         }
         case SUBS: {
-            printf("this is a sub register ins and update c flags\n"); //r
+            printf("subs called!\n"); //r
             int64_t result = rn - operand2;
             writeReg(rdI, result, sf);
             updateFlags(rn, operand2, result, opc,  sf);
@@ -356,7 +424,7 @@ static bool arithmeticRegInstProcessor(INST instruction) {
 
 }
 static bool bitLogicRegInstProcessor(INST instruction) {
-    printf("this is a processor for bitLogicRegInstProcessor\n");
+    printf("Bit Logic asdasdcalled!\n");
 
     // Enumeration for operation codes
     typedef enum {
@@ -381,7 +449,7 @@ static bool bitLogicRegInstProcessor(INST instruction) {
     int rdI = extractBits(instruction, 0, 4);
 
     // Check if destination register is invalid
-    assert(!patternMatch(rdI, 0b11111));
+//    assert(!patternMatch(rdI, 0b11111));
 
     // Read the values from the registers
     int64_t rm = readReg(rmI, sf);
@@ -389,6 +457,7 @@ static bool bitLogicRegInstProcessor(INST instruction) {
     int64_t operand2;
 
     // Perform the shift operation
+    printf("shift type: %d\n", shiftType);
     switch ((ShiftType)shiftType) {
         case LSL:
             operand2 = lsl(rm, shiftAmount, sf);
@@ -400,12 +469,16 @@ static bool bitLogicRegInstProcessor(INST instruction) {
             operand2 = asr(rm, shiftAmount, sf);
             break;
         case ROR:
+            printf("ror\n");
             operand2 = ror(rm, shiftAmount, sf);
             break;
         default:
+            printf("false\n");
             return false;
     }
 
+    printf("Operand2: %llx\n", operand2);
+    printf("rmI: %x\n", rmI);
     INST code = (opc << 1) + n;
 
     // Perform the operation based on the opcode
@@ -441,6 +514,7 @@ static bool bitLogicRegInstProcessor(INST instruction) {
             updateFlags(rn, operand2, result, ANDS, sf);
             break;
         case BICS:
+            printf("rn: %llx\n", rn);
             result = rn & ~operand2;
             printf("bics bit logic - value: %lld \n", result); //r
             updateFlags(rn, operand2, result, BICS, sf);
@@ -458,14 +532,14 @@ static bool bitLogicRegInstProcessor(INST instruction) {
 
 //Immediate Handler (detects arithmetic/widemove inst) - passed all tests
 bool immediateHandler(INST instruction) {
-
+    printf("Immediate called...\n");
     INST opi = extractBits(instruction, 23, 25);
 
     if (patternMatch(opi, 0b010)) { //Arithmetic Instruction
-        printf("this is an arithmetic instruction with an immediate value\n"); //r
+        printf("Arithmetic Called!\n"); //r
         return arithmeticImmInstProcessor(instruction);
     } else if (patternMatch(opi, 0b101)) { //WideMove Instruction
-        printf("this is an arithmetic instruction with an immediate value\n"); //r
+        printf("Wide move called!\n"); //r
         return wideMoveImmInstProcessor(instruction);
     } else {
         return false; //if error occurs
@@ -475,7 +549,7 @@ bool immediateHandler(INST instruction) {
 
 //Register Handler
 bool registerHandler(INST instruction) {
-    printf("register handler\n"); //r
+    printf("Register called...\n"); //r
     // Extract fields from instruction
     INST m = extractBits(instruction, 28, 28);
     INST opr = extractBits(instruction, 21, 24);
@@ -483,14 +557,17 @@ bool registerHandler(INST instruction) {
     INST bit21 = extractBits(instruction, 21, 21);
 
     if (m && patternMatch(opr, 0b1000)) {
+        printf("Multiply called!\n");
         return multiplyRegInstProcessor(instruction);
     }
 
     if (!m && bit24 && !bit21) {
+        printf("ArithmeticReg called!\n");
         return arithmeticRegInstProcessor(instruction);
     }
 
     if (!m && !bit24) {
+        printf("Logic called!\n");
         return bitLogicRegInstProcessor(instruction);
     }
 

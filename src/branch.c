@@ -8,17 +8,20 @@
 #include <memory.h>
 #include <stdio.h>
 static bool pstateHandler(int64_t cond){
-    char byte[4];
+    char byte[5];
+    byte[4] = '\0';
     for (int i = 3; i >= 0; i--){
         byte[3 - i] = (1 << i & cond) ? '1' : '0';
     }
-    if (strcmp(byte, "0000")) return pstate.Z == 1;
-    else if (strcmp(byte, "0001")) return pstate.Z == 0;
-    else if (strcmp(byte, "1010")) return pstate.N == pstate.V;
-    else if (strcmp(byte, "1011")) return pstate.N != pstate.V;
-    else if (strcmp(byte, "1100")) return pstate.Z == 0 && pstate.N == pstate.V;
-    else if (strcmp(byte, "1101")) return !(pstate.Z == 0 && pstate.N == pstate.V);
-    else if (strcmp(byte, "1110")) return true;
+    printf("Condition: %s\n", byte);
+    printf("ZF: %d\n", pstate.Z);
+    if (strcmp(byte, "0000") == 0) return pstate.Z == 1;
+    else if (strcmp(byte, "0001") == 0) return pstate.Z == 0;
+    else if (strcmp(byte, "1010") == 0) return pstate.N == pstate.V;
+    else if (strcmp(byte, "1011") == 0) return pstate.N != pstate.V;
+    else if (strcmp(byte, "1100") == 0) return pstate.Z == 0 && pstate.N == pstate.V;
+    else if (strcmp(byte, "1101") == 0) return !(pstate.Z == 0 && pstate.N == pstate.V);
+    else if (strcmp(byte, "1110") == 0) return true;
     else return false; // not a valid encoding
 }
 bool branchHandler(INST inst){
@@ -36,12 +39,14 @@ bool branchHandler(INST inst){
         printf("Register branch!\n");
         int64_t xn = extractBits(inst, 5, 9);
         if (xn == zero) return true;
-        programCounter = xn;
+        programCounter = registers[xn];
     } else if (extractBits(inst, 24, 31) == isConditional && extractBits(inst, 4,4) == 0){
         printf("Conditional branch!\n");
         int64_t simm19 = sign_extend(extractBits(inst, 5, 23), 19);
+        printf("Offset: %llx\n", simm19 * 4);
         int64_t cond = extractBits(inst, 0, 3);
         if (pstateHandler(cond)) programCounter += simm19 * 4;
+        else programCounter += 4;
     } else {
         // Not a valid branch instruction;
         return false;
