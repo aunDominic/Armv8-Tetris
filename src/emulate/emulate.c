@@ -191,8 +191,8 @@ static void execute() {
 #define isReg(instruction) extractBits(instruction, 25, 27) == 5
 #define isImm(instruction) extractBits(instruction, 26, 28) == 4
 static void instructionHandler(INST instruction) {
-    if (isImm(instruction)) immediateHandler(instruction);
-    else if (isReg(instruction)) registerHandler(instruction);
+    if (isImm(instruction)) immediate_handler(instruction);
+    else if (isReg(instruction)) register_handler(instruction);
     else if (isSDT(instruction)) single_data_transfer_handler(instruction);
     else if (isLL(instruction)) load_literal_handler(instruction);
     else if (isBr(instruction)) branch_handler(instruction);

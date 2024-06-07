@@ -531,7 +531,7 @@ static bool bitLogicRegInstProcessor(INST instruction) {
 //Handlers
 
 //Immediate Handler (detects arithmetic/widemove inst) - passed all tests
-bool immediateHandler(INST instruction) {
+bool immediate_handler(INST instruction) {
     printf("Immediate called...\n");
     INST opi = extractBits(instruction, 23, 25);
 
@@ -548,7 +548,7 @@ bool immediateHandler(INST instruction) {
 }
 
 //Register Handler
-bool registerHandler(INST instruction) {
+bool register_handler(INST instruction) {
     printf("Register called...\n"); //r
     // Extract fields from instruction
     INST m = extractBits(instruction, 28, 28);

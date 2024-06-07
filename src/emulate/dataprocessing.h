@@ -10,6 +10,6 @@
 #include "memory.h"
 // Immediate
 //
-bool immediateHandler(INST instruction);
-bool registerHandler (INST instruction);
+bool immediate_handler(INST instruction);
+bool register_handler (INST instruction);
 #endif //EMULATOR_DATAPROCESSING_H
