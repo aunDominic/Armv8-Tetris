@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include "memory.h"
 
-bool singleDataTransferHandler(INST instruction);
-bool loadLiteralHandler(INST instruction);
+bool single_data_transfer_handler(INST instruction);
+bool load_literal_handler(INST instruction);
 
 #endif //EMULATOR_DATATRANSFER_H

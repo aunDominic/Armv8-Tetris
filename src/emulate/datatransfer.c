@@ -92,7 +92,7 @@ static void loadStoreHandler(ADDR addr, INST instruction){
         }
     }
 }
-bool singleDataTransferHandler(INST instruction){
+bool single_data_transfer_handler(INST instruction){
     // Preconditions:
     // Format: 1 sf 1110 0U0L offset xn rt
     // rt -> target register
@@ -105,7 +105,7 @@ bool singleDataTransferHandler(INST instruction){
     loadStoreHandler(addr, instruction);
     return true; // errors
 }
-bool loadLiteralHandler(INST instruction){
+bool load_literal_handler(INST instruction){
     printf("Load Literal called.\n");
     setFlags(instruction);
     int rt = (int) extractBits(instruction, 0, 4);
@@ -125,7 +125,7 @@ bool loadLiteralHandler(INST instruction){
 //    INST uload64 = SDTconstructer(1,1,1, 123, 3, 4);
 //    // Desired effect: memory[R3 + 123 * 8] = 5
 //
-//    singleDataTransferHandler(uload64);
+//    single_data_transfer_handler(uload64);
 //    printMemory(970, 990);
 //    printRegisters();
 //

@@ -24,7 +24,7 @@ static bool pstateHandler(int64_t cond){
     else if (strcmp(byte, "1110") == 0) return true;
     else return false; // not a valid encoding
 }
-bool branchHandler(INST inst){
+bool branch_handler(INST inst){
     printf("Branch instruction called...\n");
     const int64_t isRegister = binaryToDecimal("1101011000011111000000");
     const int64_t isUnconditional = binaryToDecimal("000101");

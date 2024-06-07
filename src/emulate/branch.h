@@ -9,4 +9,4 @@
 
 #endif //EMULATOR_BRANCH_H
 
-bool branchHandler(INST inst);
+bool branch_handler(INST inst);

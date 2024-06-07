@@ -193,9 +193,9 @@ static void execute() {
 static void instructionHandler(INST instruction) {
     if (isImm(instruction)) immediateHandler(instruction);
     else if (isReg(instruction)) registerHandler(instruction);
-    else if (isSDT(instruction)) singleDataTransferHandler(instruction);
-    else if (isLL(instruction)) loadLiteralHandler(instruction);
-    else if (isBr(instruction)) branchHandler(instruction);
+    else if (isSDT(instruction)) single_data_transfer_handler(instruction);
+    else if (isLL(instruction)) load_literal_handler(instruction);
+    else if (isBr(instruction)) branch_handler(instruction);
     else assert(false && "Error: Not a valid instruction type.");
 
     if (!(isBr(instruction))) programCounter += 4;
