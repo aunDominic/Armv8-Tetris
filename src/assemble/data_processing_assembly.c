@@ -59,26 +59,27 @@ static uint8_t get_opc_mov(Opcode opcode) {
 }
 
 INST two_op_inst(char *remainingLine, uint32_t address, Opcode opcode) {
-    // general steps are read the next 2 registers do smth with that, then determine if its immediate
-    // or not
+    // general steps are read the next 2 registers
+    // do smth with the registers
+    // then determine if its immediate
 
     INST instr = 0;
 
-    // could probably just make handle_register return a binary value but its useful
-    // to have an intermediate representation (as its used for other functions)
+
     Register reg1 = handle_register(&remainingLine);
     Register reg2 = handle_register(&remainingLine);
 
-    // this common idiom could be a function but would have to return a pointer or have char **
+    // this common idiom could be a function
+    // but would have to return a pointer or have char **
     // which is slightly awkward to use
     while (isspace(*remainingLine)) {
         remainingLine++;
     }
 
     // do stuff common to both of them
-    instr = modify_instruction(instr, 31, 31, reg1.is64Mode); // set 31 bit
-    instr = modify_instruction(instr, 0, 4, reg_to_binary(reg1));
-    instr = modify_instruction(instr, 5, 9, reg_to_binary(reg2));
+    modify_instruction(&instr, 31, 31, reg1.is64Mode); // set 31 bit
+    modify_instruction(&instr, 0, 4, reg_to_binary(reg1));
+    modify_instruction(&instr, 5, 9, reg_to_binary(reg2));
 
     // now determine if its immediate or another register
     // even though the spec doesn't specify, im gonna assume immediate's can also be specified in hex
@@ -86,73 +87,79 @@ INST two_op_inst(char *remainingLine, uint32_t address, Opcode opcode) {
 
 
     if (*remainingLine == '#') {
-        // this is super ugly, refactor this whole block into a function later
+        // this handles DP (immediate)
         char *rest;
         uint32_t imm = strtoul(remainingLine + 1, &rest, 0);
         // guaranteed that we're in ADD, ADDS, SUB, SUBS land: since these are the only
         // ones with immediate operations at this stage
         uint8_t opc = get_opc_arithmetic(opcode);
 
-        instr = modify_instruction(instr, 29, 30, opc);
-        instr = modify_instruction(instr, 26, 28, 4); // 0b100 decimal equivalent
-        instr = modify_instruction(instr, 23, 25, 2); // 0b010 equivalent
-        instr = modify_instruction(instr, 10, 21, imm);
+        modify_instruction(&instr, 29, 30, opc);
+        modify_instruction(&instr, 26, 28, 4); // 0b100 decimal equivalent
+        modify_instruction(&instr, 23, 25, 2); // 0b010 equivalent
+        modify_instruction(&instr, 10, 21, imm);
 
         if (*rest == NULL_CHAR) {
             return instr;
         }
 
         // there's optional things to handle
+        // ie handle "lsl #<imm>#
         uint32_t num;
         sscanf(rest, ", lsl #%d", &num);
 
         if (num == 12) {
-            instr = modify_instruction(instr, 22, 22, 1);
+            modify_instruction(&instr, 22, 22, 1);
             return instr;
         }
 
-        return instr; // this case shouldn't happen but i'll include it for safety
-    } else {
-        // we know its a register type instruction
-        Register reg3 = handle_register(&remainingLine);
-        instr = modify_instruction(instr, 16, 20, reg_to_binary(reg3));
-        // assumes comma is already handled by handle_register
-        // determine shift type
-
-        Shifter shifter = determineShift(remainingLine);
-        // from line_reader.c we know that its arithmetic or bit-logic hence M (bit 28) stays 0
-        instr = modify_instruction(instr, 25, 27, 5); // 101, common for both
-
-        // determine if its bitwise or arithmetic now
-        uint8_t opc = 0;
-        OpcodeType opcodeType = get_opcode_type(opcode);
-
-        // can definitely refactor this tbh for ARITHMETIC AND BITWISE
-        // but i just wanted to be explicit rather than things be out of cases
-        if (opcodeType.type == ARITHMETIC) {
-            opc = get_opc_arithmetic(opcode);
-            instr = modify_instruction(instr, 29, 30, opc);
-            instr = modify_instruction(instr, 24, 24, 1);
-            instr = modify_instruction(instr, 22, 23, shifter.shiftType);
-            // leave bit 21 the same as nothing changes from 0
-            instr = modify_instruction(instr, 10, 15, shifter.shiftAmount);
-        } else if (opcodeType.type == BITWISE) {
-            opc = get_opc_bitwise(opcode);
-            instr = modify_instruction(instr, 29, 30, opc);
-            instr = modify_instruction(instr, 22, 23, shifter.shiftType);
-            instr = modify_instruction(instr, 21, 21, opcodeType.isNegated);
-            instr = modify_instruction(instr, 10, 15, shifter.shiftAmount);
-        } else if (opcodeType.type == MULTIPLY) {
-            opc = 0; // is 0 for multiplication
-            instr = modify_instruction(instr, 29, 30, opc); // opc, is unnecessary
-            instr = modify_instruction(instr, 28, 28, 1); // M
-            instr = modify_instruction(instr , 21, 24, 8); // opr for multiplication
-            instr = modify_instruction(instr, 10, 14, 31); // set to zero register
-            instr = modify_instruction(instr, 15, 15, opcodeType.isNegated);
-        }
-
+        // honestly this case is only reached if we have lsl #0 which is useless
+        // perhaps some compiler might generate this though
         return instr;
     }
+
+    // we know its a register type instruction due to early return from other case
+    Register reg3 = handle_register(&remainingLine);
+    modify_instruction(&instr, 16, 20, reg_to_binary(reg3));
+    // assumes comma is already handled by handle_register
+    // determine shift type
+
+    Shifter shifter = determineShift(remainingLine);
+    // from line_reader.c we know that its arithmetic or bit-logic hence M (bit 28) stays 0
+    modify_instruction(&instr, 25, 27, 5); // 101, common for both
+
+    // determine if its bitwise or arithmetic now
+    uint8_t opc = 0;
+    OpcodeType opcodeType = get_opcode_type(opcode);
+
+    // Can't refactor this properly due to MULTIPLY.
+    // There are some common elements between ARITHMETIC and BITWISE though
+    // ie bits 10-15 with shiftAmount and shiftType
+    // but i just wanted to be explicit rather than things be out of cases
+    if (opcodeType.type == ARITHMETIC) {
+        opc = get_opc_arithmetic(opcode);
+        modify_instruction(&instr, 29, 30, opc);
+        modify_instruction(&instr, 24, 24, 1);
+        modify_instruction(&instr, 22, 23, shifter.shiftType);
+        // leave bit 21 the same as nothing changes from 0
+        modify_instruction(&instr, 10, 15, shifter.shiftAmount);
+    } else if (opcodeType.type == BITWISE) {
+        opc = get_opc_bitwise(opcode);
+        modify_instruction(&instr, 29, 30, opc);
+        // leave bit 24 the same ie at 0
+        modify_instruction(&instr, 22, 23, shifter.shiftType);
+        modify_instruction(&instr, 21, 21, opcodeType.isNegated);
+        modify_instruction(&instr, 10, 15, shifter.shiftAmount);
+    } else if (opcodeType.type == MULTIPLY) {
+        // opc = 0; // is 0 for multiplication
+        // modify_instruction(&instr, 29, 30, opc); // opc, is unnecessary
+        modify_instruction(&instr, 28, 28, 1); // M
+        modify_instruction(&instr , 21, 24, 8); // opr for multiplication
+        modify_instruction(&instr, 10, 14, 31); // set to zero register
+        modify_instruction(&instr, 15, 15, opcodeType.isNegated);
+    }
+
+    return instr;
 }
 INST multiply_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     INST instr = 0;
@@ -161,9 +168,9 @@ INST multiply_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     Register rm = handle_register(&remainingLine);
     Register ra = handle_register(&remainingLine);
 
-    instr = modify_instruction(instr, 31, 31, rd.is64Mode); // set 31 bit
-    instr = modify_instruction(instr, 21, 30, 0xd8); // 00 1101 1000
-    instr = modify_instruction(instr, 16, 20, reg_to_binary(rm));
+    modify_instruction(&instr, 31, 31, rd.is64Mode); // set 31 bit
+    modify_instruction(&instr, 21, 30, 0xd8); // 00 1101 1000
+    modify_instruction(&instr, 16, 20, reg_to_binary(rm));
     int x = 0;
     switch (opcode) {
         case MADD:
@@ -177,15 +184,16 @@ INST multiply_inst(char *remainingLine, uint32_t address, Opcode opcode) {
             exit(EXIT_FAILURE);
     }
 
-    instr = modify_instruction(instr, 15, 15, x);
-    instr = modify_instruction(instr, 10, 14, reg_to_binary(ra));
-    instr = modify_instruction(instr, 5, 9, reg_to_binary(rn));
-    instr = modify_instruction(instr, 0, 4, reg_to_binary(rd));
+    modify_instruction(&instr, 15, 15, x);
+    modify_instruction(&instr, 10, 14, reg_to_binary(ra));
+    modify_instruction(&instr, 5, 9, reg_to_binary(rn));
+    modify_instruction(&instr, 0, 4, reg_to_binary(rd));
 
     return instr;
 }
+
 INST single_op_inst_alias(char *remainingLine, uint32_t address, Opcode opcode) {
-    // handle cases due to aliases
+    // handle cases due to aliases, this is done by transforming the string
     transform_middle(remainingLine);
     switch (opcode) {
         case MOV:
@@ -203,7 +211,7 @@ INST single_op_inst_alias(char *remainingLine, uint32_t address, Opcode opcode) 
 }
 
 // honestly this has so much in common with the immediate part of two_op_inst
-// so can refactor that in the future
+// However I like separating the function to separate out responsibility
 INST wide_move_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     INST instr = 0;
     Register rd = handle_register(&remainingLine);
@@ -219,16 +227,16 @@ INST wide_move_inst(char *remainingLine, uint32_t address, Opcode opcode) {
 
     // printf("Imm value is %d\n", imm);
 
-    instr = modify_instruction(instr, 31, 31, rd.is64Mode); // set 31 bit
+    modify_instruction(&instr, 31, 31, rd.is64Mode); // set 31 bit
     uint8_t opc = get_opc_mov(opcode);
 
-    instr = modify_instruction(instr, 29, 30, opc);
-    instr = modify_instruction(instr, 26, 28, 4); // common immediate stuff
-    instr = modify_instruction(instr, 23, 25, 5); // opi
+    modify_instruction(&instr, 29, 30, opc);
+    modify_instruction(&instr, 26, 28, 4); // common immediate stuff
+    modify_instruction(&instr, 23, 25, 5); // opi
 
     // printf("wide_mov_inst immediate value %d\n", imm);
-    instr = modify_instruction(instr, 5, 20, imm);
-    instr = modify_instruction(instr, 0, 4, reg_to_binary(rd));
+    modify_instruction(&instr, 5, 20, imm);
+    modify_instruction(&instr, 0, 4, reg_to_binary(rd));
 
     // now handle optional operand
     if (*rest == NULL_CHAR) {
@@ -237,12 +245,12 @@ INST wide_move_inst(char *remainingLine, uint32_t address, Opcode opcode) {
 
     uint32_t num;
     sscanf(rest, ", lsl #%d", &num); // num should be a multiple of 16
-    instr = modify_instruction(instr, 21, 22, num / 16);
+    modify_instruction(&instr, 21, 22, num / 16);
     return instr;
 }
 
 INST two_op_nodest_inst(char *remainingLine, uint32_t address, Opcode opcode) {
-    // handle cases due to aliases
+    // handle cases due to aliases, does this by modifying the remainingLine string.
     transform_start(remainingLine);
     switch (opcode) {
         case CMP:

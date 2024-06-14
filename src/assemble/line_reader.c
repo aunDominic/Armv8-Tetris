@@ -9,6 +9,7 @@
 
 #include "line_reader.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include "opcode_table.h"
@@ -17,6 +18,8 @@
 #include "data_processing_assembly.h"
 #include "directives.h"
 #include "loadstore.h"
+
+#define DEFAULT_RETURN_VAL 128
 
 bool is_label(const char *line) {
     int i = 0;
@@ -43,6 +46,7 @@ bool is_label(const char *line) {
 
 // there's a case for lineHandler to not take an address and instead the address should be global
 // reduces clarity but might be simpler
+// this is basically the function to edit when adding more instruction support
 INST lineHandler(char *line, uint32_t address) {
 
     // first step: get opcode first
@@ -52,12 +56,13 @@ INST lineHandler(char *line, uint32_t address) {
     strcpy(str_opcode, token);
 
     Opcode opcode = getValue(opcodeTable, str_opcode);
+    // uses an opcode table using the symbol_table ADT
 
     printf("Opcode is %d. Remaining string: %s\n", opcode, remainingLine);
 
     // now match appropiate opcode to a function, can do switch or function pointers
     // I don't want to populate a huge array again so I'm sticking to massive switch
-    INST returnVal = 128; // default value for debugging
+    INST returnVal = DEFAULT_RETURN_VAL; // default value for debugging
     switch (opcode) {
         case MADD: case MSUB:
             returnVal = multiply_inst(remainingLine, address, opcode);
@@ -110,6 +115,7 @@ INST lineHandler(char *line, uint32_t address) {
             exit(EXIT_FAILURE);
     }
 
+    assert(returnVal != DEFAULT_RETURN_VAL);
     return returnVal;
 
 }

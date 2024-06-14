@@ -14,9 +14,16 @@
 
 static Register reg_from_regStr(const char *strReg);
 
-// assumes string is after op_code ie it starts with a known register definition
-// example string this will receive is "x0, x0, #1, lsl #12"
-// remainingLine will skip the character after the comma
+/* PRE: string is after op_code ie it starts with a known register definition
+ * example string this will receive is "x0, x0, #1, lsl #12"
+ * remainingLine will skip the character after the comma
+ * Assumes it may have leading whitespace.
+ * Modifies remainingLine to point to the thing after the comma.
+
+ * could probably just make handle_register return a binary value but its useful
+ * to have an intermediate representation (as its used for other functions)
+ * sometimes I might need the extra information
+ */
 Register handle_register(char **remainingLine) {
 
     // skips any leading whitespace
@@ -80,7 +87,7 @@ void print_binary(INST number) {
 
 // could change this function so it takes in a INST * instead and return void
 // however i like being more explicit and allows instr to be used as a register by compiler potentially
-INST modify_instruction(INST instruction, const int x, const int y, const int32_t value) {
+void modify_instruction(INST *instruction, const int x, const int y, const int value) {
     // Calculate the number of bits to be modified
 
     assert(x <= y);
@@ -93,12 +100,10 @@ INST modify_instruction(INST instruction, const int x, const int y, const int32_
     uint32_t mask = ((1 << num_bits) - 1) << x;
 
     // Clear the bits in the original instruction
-    instruction &= ~mask;
+    *instruction &= ~mask;
 
     // Set the new value in the cleared bits
-    instruction |= (value << x) & mask;
-
-    return instruction;
+    *instruction |= (value << x) & mask;
 }
 
 uint32_t reg_to_binary(Register reg) {

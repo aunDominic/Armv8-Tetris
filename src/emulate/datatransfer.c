@@ -111,7 +111,7 @@ bool loadLiteralHandler(INST instruction){
     int rt = (int) extractBits(instruction, 0, 4);
     int64_t simm19 = sign_extend(extractBits(instruction, 5, 23), 19);
     ADDR addr = programCounter + simm19 * 4;
-    assert((addr <= memSize - 4) && "Error: Memory out of bounds");
+    assert((addr <= memSize - 4) && "Error: Memory out of bounds"); // this is a trick in C
     L = true;
     loadStoreHandler(addr, instruction);
     return true; // errors

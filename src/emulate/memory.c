@@ -17,7 +17,7 @@ struct PSTATE pstate = {
 int64_t registers[31] = {0};
 int64_t programCounter = 0;
 int64_t zeroRegister = 0;
-BYTE memory[1 << 21] = {0};
+BYTE memory[memSize] = {0};
 const int32_t HALT =  0x8a000000;
 void printMemory(int start, int end){
     for (int i = start; i < end; i++){
