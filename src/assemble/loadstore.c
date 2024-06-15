@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <stdint.h>
 #include "parsing_common.h"
 #include "symbol_table.h"
 #include <string.h>
@@ -203,7 +203,7 @@ INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode) {
                 modify_instruction(&instr, 10, 10, 1);
                 break;
             case UNSIGNED_OFFSET:
-                int32_t imm12 = parsed.Rt.is64Mode ? parsed.imm / 8 : parsed.imm / 4;
+                imm12 = parsed.Rt.is64Mode ? parsed.imm / 8 : parsed.imm / 4;
                 // printf("imm12 for unsigned offset is %d\n", imm12);
                 modify_instruction(&instr, 10, 21, imm12);
                 break;
