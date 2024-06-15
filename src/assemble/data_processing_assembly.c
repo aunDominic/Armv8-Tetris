@@ -106,7 +106,7 @@ INST two_op_inst(char *remainingLine, uint32_t address, Opcode opcode) {
         // there's optional things to handle
         // ie handle "lsl #<imm>#
         uint32_t num;
-        sscanf(rest, ", lsl #%d", &num);
+        sscanf(rest, ", lsl #%u", &num);
 
         if (num == 12) {
             modify_instruction(&instr, 22, 22, 1);
@@ -129,7 +129,7 @@ INST two_op_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     modify_instruction(&instr, 25, 27, 5); // 101, common for both
 
     // determine if its bitwise or arithmetic now
-    uint8_t opc = 0;
+    uint8_t opc;
     OpcodeType opcodeType = get_opcode_type(opcode);
 
     // Can't refactor this properly due to MULTIPLY.
@@ -244,7 +244,7 @@ INST wide_move_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     }
 
     uint32_t num;
-    sscanf(rest, ", lsl #%d", &num); // num should be a multiple of 16
+    sscanf(rest, ", lsl #%u", &num); // num should be a multiple of 16
     modify_instruction(&instr, 21, 22, num / 16);
     return instr;
 }

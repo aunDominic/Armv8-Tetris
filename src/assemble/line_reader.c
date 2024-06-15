@@ -52,7 +52,7 @@ INST lineHandler(char *line, uint32_t address) {
     // first step: get opcode first
     char str_opcode[MAX_LENGTH];
     char *remainingLine; // used the store the remaining unparsed string
-    char *token = strtok_r(line, " ", &remainingLine);
+    const char *token = strtok_r(line, " ", &remainingLine);
     strcpy(str_opcode, token);
 
     Opcode opcode = getValue(opcodeTable, str_opcode);

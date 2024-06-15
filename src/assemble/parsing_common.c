@@ -10,7 +10,11 @@
 #include <stdlib.h>
 
 // used for parsing string representation of registers in assembly
+// macros need to be done like this because preprocessor does outside in
+// when expanding
 #define MAX_REG_LENGTH 10
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
 
 static Register reg_from_regStr(const char *strReg);
 
@@ -33,7 +37,7 @@ Register handle_register(char **remainingLine) {
     // printf("Register handling: %s\n", *remainingLine);
 
     char *rest;
-    char *strReg = strtok_r(*remainingLine, ",", &rest);
+    const char *strReg = strtok_r(*remainingLine, ",", &rest);
     // str_reg should hopefully be "x0"
 
     // now determine type of register from string, adjust remainingLine so it points to the thing after comma
@@ -138,7 +142,7 @@ Shifter determineShift(char *remainingLine) {
     }
 
     // Tokenize the shift amount
-    char *amountStr = strtok_r(NULL, " #", &saveptr);
+    const char *amountStr = strtok_r(NULL, " #", &saveptr);
     if (amountStr == NULL) {
         fprintf(stderr, "Error in Shifter: Invalid input format\n");
         exit(EXIT_FAILURE);
@@ -219,8 +223,11 @@ void transform_middle(char *instruction) {
     char transformed_instruction[MAX_LENGTH];
 
     // Extract the destination and source registers
-    char Xd[MAX_REG_LENGTH], Xm[MAX_REG_LENGTH];
-    sscanf(instruction, " %s %s", Xd, Xm);
+    char Xd[MAX_REG_LENGTH + 1], Xm[MAX_REG_LENGTH + 1];
+    // sscanf(instruction, " %s %s", Xd, Xm);
+    // done to allow more flexibile handling of field width's with macro definitions
+    // instead of hardcoding "%10s" which would require multiple changes in the future
+    sscanf(instruction, " %" STR(MAX_REG_LENGTH) "s %" STR(MAX_REG_LENGTH) "s", Xd, Xm);
 
     // Format the new instruction as "ORR Xd, XZR, Xm"
 
@@ -228,6 +235,9 @@ void transform_middle(char *instruction) {
         snprintf(transformed_instruction, sizeof(transformed_instruction), "%s xzr, %s", Xd, Xm);
     } else if (Xd[0] == 'w') {
         snprintf(transformed_instruction, sizeof(transformed_instruction), "%s wzr, %s", Xd, Xm);
+    } else {
+        perror("Invalid register prefix in transform_middle(); \n");
+        exit(EXIT_FAILURE);
     }
 
     // Copy the transformed instruction back to the original string
@@ -241,13 +251,19 @@ void transform_start(char *instruction) {
     char transformed_instruction[MAX_LENGTH];
 
     // Extract the destination and source registers
-    char Xd[MAX_REG_LENGTH];
-    sscanf(instruction, " %s", Xd);
+    char Xd[MAX_REG_LENGTH + 1];
+    // sscanf(instruction, " %s", Xd);
+    // done to allow more flexibile handling of field width's with macro definitions
+    // instead of hardcoding "%10s" which would require multiple changes in the future
+    sscanf(instruction, " %" STR(MAX_REG_LENGTH) "s", Xd);
 
     if (Xd[0] == 'x') {
         strcpy(transformed_instruction, "xzr, ");
     } else if (Xd[0] == 'w') {
         strcpy(transformed_instruction, "wzr, ");
+    } else {
+        perror("Invalid register prefix in transform_middle(); \n");
+        exit(EXIT_FAILURE);
     }
 
     strcat(transformed_instruction, instruction);

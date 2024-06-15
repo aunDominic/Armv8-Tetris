@@ -32,6 +32,7 @@ int main(const int argc, const char **argv) {
 
     if ((outputFile = fopen(argv[2], "wb")) == NULL) {
         perror("Error opening output file\n");
+        fclose(inputFile);
         return EXIT_FAILURE;
     }
 
@@ -53,7 +54,7 @@ int main(const int argc, const char **argv) {
             if (is_label(buffer)) {
 
                 // first remove the colon at the end of buffer for labels
-                char *pos = strchr(buffer, ':');
+                const char *pos = strchr(buffer, ':');
                 buffer[pos - buffer] = NULL_CHAR;
                 addSymbol(symbol_table, buffer, address);
             } else {
@@ -68,7 +69,9 @@ int main(const int argc, const char **argv) {
     uint32_t instructionAmount = lineNumber(address);
 
     // instruction buffer to write everything at once.
-    INST instructions[instructionAmount];
+    // This is a VLA array - perhaps this could be changed to a dynamic array
+    // empty initializer due to VLA array restriction
+    INST instructions[instructionAmount] = {};
 
     // reset these variables for 2nd pass
     rewind(inputFile); // move file pointer back to start
