@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <stdint.h>
 #include "parsing_common.h"
 #include "symbol_table.h"
 #include <string.h>
@@ -186,7 +186,7 @@ INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode) {
         instr = modify_instruction(instr, 22, 22, opcode == LDR ? 1 : 0);
 
         instr = modify_instruction(instr, 5, 9, reg_to_binary(parsed.Xn_SP));
-
+        int32_t imm12;
         // now handle the different cases based on addressing modes
         switch (parsed.mode) {
             case REGISTER_OFFSET:
@@ -200,7 +200,7 @@ INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode) {
                 instr = modify_instruction(instr, 10, 10, 1);
                 break;
             case UNSIGNED_OFFSET:
-                int32_t imm12 = parsed.Rt.is64Mode ? parsed.imm / 8 : parsed.imm / 4;
+                imm12 = parsed.Rt.is64Mode ? parsed.imm / 8 : parsed.imm / 4;
                 // printf("imm12 for unsigned offset is %d\n", imm12);
                 instr = modify_instruction(instr, 10, 21, imm12);
                 break;

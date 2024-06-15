@@ -7,7 +7,7 @@ CFLAGS = -Wall -O0 -ggdb
 TARGETS := assemble emulate
 
 # Define the build directory and source directories
-BUILD_DIR := ./armv8_testsuite/solution
+BUILD_DIR := ./build
 SRC_DIR := ./src
 ASSEMBLE_SRC_DIR := $(SRC_DIR)/assemble
 
