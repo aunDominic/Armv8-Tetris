@@ -12,6 +12,11 @@
 #include "parsing_common.h"
 
 // these are done according to section 1.8
+
+/*
+ * PRE - takes in an opcode corresponding to a branch instruction
+ * RETURNS - a number to be used (these values correspond to a specific binary value)
+ */
 static uint8_t cond_encoding(const Opcode bOpcode) {
     switch (bOpcode) {
         case B_EQ:
@@ -34,9 +39,15 @@ static uint8_t cond_encoding(const Opcode bOpcode) {
     }
 }
 
-INST b_inst(const char *remainingLine, const uint32_t address) {
-    INST instr = 0;
+/*
+ * PRE - starts with the string after the opcode part
+ * Example: if the originalLine is "b rest" then remainingLine is ' rest'
+ * There may or may not be whitespace at start.
+ * RETURNS the offset
+ * This is used for 2 of the branch function handlers
+ */
 
+static int32_t offset_from_branch(const char *remainingLine, const uint32_t address) {
     // literally just a literal remaining which is a label or an integer
     while (isspace(*remainingLine)) {
         remainingLine++;
@@ -50,10 +61,16 @@ INST b_inst(const char *remainingLine, const uint32_t address) {
         imm = getValue(symbol_table, remainingLine);
     }
 
-    int32_t offset = (imm - (int32_t) address) / 4;
+    return (imm - (int32_t) address) / 4;
+}
 
-    instr = modify_instruction(instr, 26, 31, 5);
-    instr = modify_instruction(instr, 0, 25, offset);
+INST b_inst(const char *remainingLine, const uint32_t address) {
+    INST instr = 0;
+
+    int32_t offset = offset_from_branch(remainingLine, address);
+
+    modify_instruction(&instr, 26, 31, 5);
+    modify_instruction(&instr, 0, 25, offset);
 
     return instr;
 }
@@ -62,27 +79,14 @@ INST b_inst(const char *remainingLine, const uint32_t address) {
 INST b_cond(const char *remainingLine, const uint32_t address, const Opcode bOpCode) {
     INST instr = 0;
 
-    // literally just a literal remaining which is a label or an integer
-    while (isspace(*remainingLine)) {
-        remainingLine++;
-    }
+    int32_t offset = offset_from_branch(remainingLine, address);
 
-    int32_t imm;
-    if (*remainingLine == '#') {
-        imm = strtol(remainingLine + 1, NULL, 0);
-    } else {
-        // must be a label
-        imm = getValue(symbol_table, remainingLine);
-    }
-
-    int32_t offset = (imm - (int32_t) address) / 4;
-
-    instr = modify_instruction(instr, 24, 31, 0x54); // 0101 0100
-    instr = modify_instruction(instr, 5, 23, offset);
+    modify_instruction(&instr, 24, 31, 0x54); // 0101 0100 - look at spec
+    modify_instruction(&instr, 5, 23, offset);
 
     uint8_t encoding = cond_encoding(bOpCode);
 
-    instr = modify_instruction(instr, 0, 3, encoding);
+    modify_instruction(&instr, 0, 3, encoding);
 
     return instr;
 
@@ -91,8 +95,8 @@ INST br_inst(char *remainingLine, uint32_t address) {
     INST instr = 0;
     Register reg1 = handle_register(&remainingLine);
 
-    instr = modify_instruction(instr, 25, 31, 0x6b); // magic ish value
-    instr = modify_instruction(instr, 16, 20, 31); // magic ish value
-    instr = modify_instruction(instr, 5, 9, reg_to_binary(reg1));
+    modify_instruction(&instr, 25, 31, 0x6b); // magic ish value
+    modify_instruction(&instr, 16, 20, 31); // magic ish value
+    modify_instruction(&instr, 5, 9, reg_to_binary(reg1));
     return instr;
 }

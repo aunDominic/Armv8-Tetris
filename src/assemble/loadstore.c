@@ -88,11 +88,13 @@ void parse_addressing_mode(char *remainingLine, ParsedAddress *parsed) {
     // labels are handled here
     int32_t imm = getValue(symbol_table, remainingLine);
     if (imm != NOT_FOUND) {
+        // we know its a label
         parsed->literal = imm;
         parsed->mode = LITERAL;
         return;
     }
 
+    // not a label anymore
 
     // Skip the opening bracket '['
     if (*remainingLine == '[') {
@@ -159,50 +161,51 @@ void parse_addressing_mode(char *remainingLine, ParsedAddress *parsed) {
     return;
 }
 
+// handles both str and load in one go as they have so much in common
 INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     INST instr = 0;
 
     ParsedAddress parsed;
     parse_addressing_mode(remainingLine, &parsed);
 
-    instr = modify_instruction(instr, 30, 30, parsed.Rt.is64Mode);
-    instr = modify_instruction(instr, 0, 4, reg_to_binary(parsed.Rt));
+    modify_instruction(&instr, 30, 30, parsed.Rt.is64Mode);
+    modify_instruction(&instr, 0, 4, reg_to_binary(parsed.Rt));
     if (parsed.mode == LITERAL) {
         // do literal handling
-        instr = modify_instruction(instr, 31, 31, 0);
-        instr = modify_instruction(instr, 27, 29, 3);
+        modify_instruction(&instr, 31, 31, 0);
+        modify_instruction(&instr, 27, 29, 3);
         // handle simm19 stuff
 
         printf("parsed.literal is %d\n", parsed.literal);
         int32_t offset = (parsed.literal - (int32_t) address) / 4;
-        instr = modify_instruction(instr, 5, 23, offset);
+        modify_instruction(&instr, 5, 23, offset);
     } else {
         // one of the other modes that we need to handle
 
         // do common things
-        instr = modify_instruction(instr, 31, 31, 1);
-        instr = modify_instruction(instr, 25, 29, 0x1C);
-        instr = modify_instruction(instr, 24, 24, parsed.mode == UNSIGNED_OFFSET ? 1 : 0);
-        instr = modify_instruction(instr, 22, 22, opcode == LDR ? 1 : 0);
+        modify_instruction(&instr, 31, 31, 1);
+        modify_instruction(&instr, 25, 29, 0x1C);
+        modify_instruction(&instr, 24, 24, parsed.mode == UNSIGNED_OFFSET ? 1 : 0);
+        modify_instruction(&instr, 22, 22, opcode == LDR ? 1 : 0);
 
-        instr = modify_instruction(instr, 5, 9, reg_to_binary(parsed.Xn_SP));
-        int32_t imm12;
+        modify_instruction(&instr, 5, 9, reg_to_binary(parsed.Xn_SP));
+
         // now handle the different cases based on addressing modes
         switch (parsed.mode) {
             case REGISTER_OFFSET:
-                instr = modify_instruction(instr, 21, 21, 1);
-                instr = modify_instruction(instr, 16, 20, reg_to_binary(parsed.Xm));
-                instr = modify_instruction(instr, 10, 15, 0x1a);
+                modify_instruction(&instr, 21, 21, 1);
+                modify_instruction(&instr, 16, 20, reg_to_binary(parsed.Xm));
+                modify_instruction(&instr, 10, 15, 0x1a);
                 break;
             case PRE_INDEX: case POST_INDEX:
-                instr = modify_instruction(instr, 12, 20, parsed.simm);
-                instr = modify_instruction(instr, 11, 11, parsed.mode == PRE_INDEX ? 1 : 0);
-                instr = modify_instruction(instr, 10, 10, 1);
+                modify_instruction(&instr, 12, 20, parsed.simm);
+                modify_instruction(&instr, 11, 11, parsed.mode == PRE_INDEX ? 1 : 0);
+                modify_instruction(&instr, 10, 10, 1);
                 break;
             case UNSIGNED_OFFSET:
                 imm12 = parsed.Rt.is64Mode ? parsed.imm / 8 : parsed.imm / 4;
                 // printf("imm12 for unsigned offset is %d\n", imm12);
-                instr = modify_instruction(instr, 10, 21, imm12);
+                modify_instruction(&instr, 10, 21, imm12);
                 break;
             default:
                 fprintf(stderr, "mode is %d\n", parsed.mode);

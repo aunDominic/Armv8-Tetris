@@ -14,7 +14,7 @@ Register handle_register(char **remainingLine);
 
 void print_binary(INST number);
 
-INST modify_instruction(INST instruction, int x, int y, int32_t value);
+void modify_instruction(INST *instruction, int x, int y, int32_t value);
 
 uint32_t reg_to_binary(Register reg);
 

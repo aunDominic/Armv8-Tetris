@@ -10,13 +10,14 @@ TARGETS := assemble emulate
 BUILD_DIR := ./build
 SRC_DIR := ./src
 ASSEMBLE_SRC_DIR := $(SRC_DIR)/assemble
+EMULATE_SRC_DIR :=  $(SRC_DIR)/emulate
 
-# Find all the C and C++ files we want to compile
-EMULATE_SRCS := $(shell find $(SRC_DIR) -maxdepth 1 -name '*.cpp' -or -name '*.c' -or -name '*.s')
-ASSEMBLE_SRCS := $(shell find $(ASSEMBLE_SRC_DIR) -name '*.cpp' -or -name '*.c' -or -name '*.s')
+# Find all the C files we want to compile
+EMULATE_SRCS := $(shell find $(EMULATE_SRC_DIR) -name '*.c')
+ASSEMBLE_SRCS := $(shell find $(ASSEMBLE_SRC_DIR) -name '*.c')
 
 # Prepends BUILD_DIR and appends .o to every src file
-EMULATE_OBJS := $(EMULATE_SRCS:$(SRC_DIR)/%=$(BUILD_DIR)/%.o)
+EMULATE_OBJS := $(EMULATE_SRCS:$(EMULATE_SRC_DIR)/%=$(BUILD_DIR)/emulate/%.o)
 ASSEMBLE_OBJS := $(ASSEMBLE_SRCS:$(ASSEMBLE_SRC_DIR)/%=$(BUILD_DIR)/assemble/%.o)
 
 # String substitution (suffix version without %)
@@ -33,32 +34,23 @@ CPPFLAGS := $(INC_FLAGS) -MMD -MP
 # Build rules for each target
 all: $(TARGETS)
 
-assemble: $(BUILD_DIR)/assemble
-emulate: $(BUILD_DIR)/emulate
+assemble: $(BUILD_DIR)/assemble_executable
+emulate: $(BUILD_DIR)/emulate_executable
 
-$(BUILD_DIR)/assemble: $(ASSEMBLE_OBJS)
-	$(CXX) $(ASSEMBLE_OBJS) -o $@ $(LDFLAGS)
+$(BUILD_DIR)/assemble_executable: $(ASSEMBLE_OBJS)
+	$(CC) $(ASSEMBLE_OBJS) -o $@ $(LDFLAGS)
 
-$(BUILD_DIR)/emulate: $(EMULATE_OBJS)
-	$(CXX) $(EMULATE_OBJS) -o $@ $(LDFLAGS)
+$(BUILD_DIR)/emulate_executable: $(EMULATE_OBJS)
+	$(CC) $(EMULATE_OBJS) -o $@ $(LDFLAGS)
 
 # Build step for C source
-$(BUILD_DIR)/%.c.o: $(SRC_DIR)/%.c
+$(BUILD_DIR)/emulate/%.c.o: $(EMULATE_SRC_DIR)/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/assemble/%.c.o: $(ASSEMBLE_SRC_DIR)/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
-
-# Build step for C++ source
-$(BUILD_DIR)/%.cpp.o: $(SRC_DIR)/%.cpp
-	mkdir -p $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/assemble/%.cpp.o: $(ASSEMBLE_SRC_DIR)/%.cpp
-	mkdir -p $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 .PHONY: clean
 clean:
@@ -67,3 +59,8 @@ clean:
 # Include the .d makefiles
 -include $(EMULATE_DEPS)
 -include $(ASSEMBLE_DEPS)
+
+# Cppcheck target
+.PHONY: cppcheck
+cppcheck:
+	cppcheck --check-level=exhaustive --enable=all,style,performance,portability,information,unusedFunction --inconclusive --std=c99 --language=c --suppress=missingIncludeSystem --checkers-report=checkers_report.txt $(SRC_DIR)
