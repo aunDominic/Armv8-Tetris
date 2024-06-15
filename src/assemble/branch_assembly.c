@@ -49,7 +49,7 @@ static uint8_t cond_encoding(const Opcode bOpcode) {
 
 static int32_t offset_from_branch(const char *remainingLine, const uint32_t address) {
     // literally just a literal remaining which is a label or an integer
-    while (isspace(*remainingLine)) {
+    while (isspace((unsigned char) *remainingLine)) {
         remainingLine++;
     }
 
@@ -91,7 +91,8 @@ INST b_cond(const char *remainingLine, const uint32_t address, const Opcode bOpC
     return instr;
 
 }
-INST br_inst(char *remainingLine, uint32_t address) {
+
+INST br_inst(char *remainingLine) {
     INST instr = 0;
     Register reg1 = handle_register(&remainingLine);
 

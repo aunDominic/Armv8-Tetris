@@ -25,18 +25,18 @@ bool is_label(const char *line) {
     int i = 0;
 
     // Skip leading whitespace
-    while (isspace(line[i])) {
+    while (isspace((unsigned char) line[i])) {
         i++;
     }
 
     // Check if the first character is a letter, underscore, or period
-    if (!isalpha(line[i]) && line[i] != '_' && line[i] != '.') {
+    if (!isalpha((unsigned char) line[i]) && line[i] != '_' && line[i] != '.') {
         return false;
     }
-    i++;
+    i++; // technically could overflow but in rare circumstances
 
     // Check the rest of the characters
-    while (isalnum(line[i]) || line[i] == '$' || line[i] == '_' || line[i] == '.') {
+    while (isalnum((unsigned char) line[i]) || line[i] == '$' || line[i] == '_' || line[i] == '.') {
         i++;
     }
 
@@ -47,6 +47,8 @@ bool is_label(const char *line) {
 // there's a case for lineHandler to not take an address and instead the address should be global
 // reduces clarity but might be simpler
 // this is basically the function to edit when adding more instruction support
+// address is instructoin's current address
+// currently only needed for branch + load/str instructions
 INST lineHandler(char *line, uint32_t address) {
 
     // first step: get opcode first
@@ -65,29 +67,29 @@ INST lineHandler(char *line, uint32_t address) {
     INST returnVal = DEFAULT_RETURN_VAL; // default value for debugging
     switch (opcode) {
         case MADD: case MSUB:
-            returnVal = multiply_inst(remainingLine, address, opcode);
+            returnVal = multiply_inst(remainingLine, opcode);
             break;
 
         case ADD: case ADDS: case SUB: case SUBS:
         case AND: case ANDS: case BIC: case BICS:
         case EOR: case ORR: case EON: case ORN:
         case MUL: case MNEG:
-            returnVal = two_op_inst(remainingLine, address, opcode);
+            returnVal = two_op_inst(remainingLine, opcode);
             break;
 
         case MOV: case NEG: case NEGS: case MVN:
             // these are aliases
             // so just transform them into the two_op_inst
-            returnVal = single_op_inst_alias(remainingLine, address, opcode);
+            returnVal = single_op_inst_alias(remainingLine, opcode);
             break;
 
         case MOVZ: case MOVN: case MOVK:
-            returnVal = wide_move_inst(remainingLine, address, opcode);
+            returnVal = wide_move_inst(remainingLine, opcode);
             break;
 
         case CMP: case CMN: case TST:
             // basically all we have to do is transform them using the zero register to a two_op
-            returnVal = two_op_nodest_inst(remainingLine, address, opcode);
+            returnVal = two_op_nodest_inst(remainingLine, opcode);
             break;
 
         case B:
@@ -99,7 +101,7 @@ INST lineHandler(char *line, uint32_t address) {
             break;
 
         case BR:
-            returnVal = br_inst(remainingLine, address);
+            returnVal = br_inst(remainingLine);
             break;
 
         case STR: case LDR:
@@ -107,7 +109,7 @@ INST lineHandler(char *line, uint32_t address) {
             break;
 
         case SPECIAL_INT:
-            returnVal = int_directive(remainingLine, address);
+            returnVal = int_directive(remainingLine);
             break;
 
         default:
@@ -117,6 +119,5 @@ INST lineHandler(char *line, uint32_t address) {
 
     assert(returnVal != DEFAULT_RETURN_VAL);
     return returnVal;
-
 }
 

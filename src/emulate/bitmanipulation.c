@@ -3,7 +3,7 @@
 //
 
 #include "bitmanipulation.h"
-#include "stdint.h"
+#include <stdint.h>
 #include "memory.h"
 #include <stdio.h>
 #include <string.h>
@@ -14,7 +14,7 @@
 void printBits(int64_t n)
 {
     for (int i = 63; i >= 0; i--){
-        if ((1LL << i) & n) {
+        if ((1ULL << i) & n) {
             printf("%d", 1);
         } else {
             printf("%d", 0);

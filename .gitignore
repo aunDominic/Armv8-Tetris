@@ -42,6 +42,7 @@ armv8_testsuite/
 # Ignore all .idea folder contents
 .idea/
 
+
 # But keep specific useful files
 !.idea/codeStyles/
 !.idea/runConfigurations/

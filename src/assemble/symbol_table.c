@@ -13,7 +13,7 @@
 SymbolTable *symbol_table = NULL;
 
 SymbolTable* createSymbolTable() {
-    SymbolTable *table = (SymbolTable*) malloc(sizeof(SymbolTable));
+    SymbolTable *table = malloc(sizeof(SymbolTable));
     table->symbols = (Symbol*) malloc(INITIAL_SIZE * sizeof(Symbol));
     table->size = 0;
     table->capacity = INITIAL_SIZE;
@@ -39,7 +39,7 @@ int32_t getValue(const SymbolTable *table, const char *symbol) {
     }
     // perror("Symbol_Table symbol not found. Shouldn't happen.\n");
     // printf("%sgetValue attempted match with \n", symbol);
-    return NOT_FOUND; // Symbol not found
+    return NOT_FOUND;
 }
 
 void freeSymbolTable(SymbolTable *table) {

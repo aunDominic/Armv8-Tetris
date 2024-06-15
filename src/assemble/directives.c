@@ -6,6 +6,6 @@
 
 #include <stdlib.h>
 
-INST int_directive(const char *remainingLine, uint32_t address) {
+INST int_directive(const char *remainingLine) {
     return strtol(remainingLine, NULL, 0);
 }

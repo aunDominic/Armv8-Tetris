@@ -23,7 +23,7 @@ static uint8_t get_opc_arithmetic(Opcode opcode) {
         case SUBS:
             return 3;
         default:
-            perror("condition opc in immediate handling in get_opc_arithmetic triggered");
+            perror("condition opc in immediate handling in get_opc_arithmetic triggered\n");
             exit(EXIT_FAILURE);
     }
 }
@@ -39,7 +39,7 @@ static uint8_t get_opc_bitwise(Opcode opcode) {
         case ANDS: case BICS:
             return 3;
         default:
-            perror("condition opc in immediate handling in get_opc_bitwise triggered");
+            perror("condition opc in immediate handling in get_opc_bitwise triggered\n");
             exit(EXIT_FAILURE);
     }
 }
@@ -53,12 +53,12 @@ static uint8_t get_opc_mov(Opcode opcode) {
         case MOVK:
             return 3;
         default:
-            perror("condition opc in immediate handling in get_opc_mov triggered");
+            perror("condition opc in immediate handling in get_opc_mov triggered\n");
             exit(EXIT_FAILURE);
     }
 }
 
-INST two_op_inst(char *remainingLine, uint32_t address, Opcode opcode) {
+INST two_op_inst(char *remainingLine, Opcode opcode) {
     // general steps are read the next 2 registers
     // do smth with the registers
     // then determine if its immediate
@@ -72,7 +72,7 @@ INST two_op_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     // this common idiom could be a function
     // but would have to return a pointer or have char **
     // which is slightly awkward to use
-    while (isspace(*remainingLine)) {
+    while (isspace((unsigned char) *remainingLine)) {
         remainingLine++;
     }
 
@@ -161,7 +161,7 @@ INST two_op_inst(char *remainingLine, uint32_t address, Opcode opcode) {
 
     return instr;
 }
-INST multiply_inst(char *remainingLine, uint32_t address, Opcode opcode) {
+INST multiply_inst(char *remainingLine, Opcode opcode) {
     INST instr = 0;
     Register rd = handle_register(&remainingLine);
     Register rn = handle_register(&remainingLine);
@@ -192,31 +192,31 @@ INST multiply_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     return instr;
 }
 
-INST single_op_inst_alias(char *remainingLine, uint32_t address, Opcode opcode) {
+INST single_op_inst_alias(char *remainingLine, Opcode opcode) {
     // handle cases due to aliases, this is done by transforming the string
     transform_middle(remainingLine);
     switch (opcode) {
         case MOV:
-            return two_op_inst(remainingLine, address, ORR);
+            return two_op_inst(remainingLine, ORR);
         case NEG:
-            return two_op_inst(remainingLine, address, SUB);
+            return two_op_inst(remainingLine, SUB);
         case NEGS:
-            return two_op_inst(remainingLine, address, SUBS);
+            return two_op_inst(remainingLine, SUBS);
         case MVN:
-            return two_op_inst(remainingLine, address, ORN);
+            return two_op_inst(remainingLine, ORN);
         default:
-            perror("Error in single_op_inst_alias call. Invalid arguments");
+            perror("Error in single_op_inst_alias call. Invalid arguments\n");
             exit(EXIT_FAILURE);
     }
 }
 
 // honestly this has so much in common with the immediate part of two_op_inst
 // However I like separating the function to separate out responsibility
-INST wide_move_inst(char *remainingLine, uint32_t address, Opcode opcode) {
+INST wide_move_inst(char *remainingLine, Opcode opcode) {
     INST instr = 0;
     Register rd = handle_register(&remainingLine);
 
-    while (isspace(*remainingLine)) {
+    while (isspace((unsigned char) *remainingLine)) {
         remainingLine++;
     }
 
@@ -249,16 +249,16 @@ INST wide_move_inst(char *remainingLine, uint32_t address, Opcode opcode) {
     return instr;
 }
 
-INST two_op_nodest_inst(char *remainingLine, uint32_t address, Opcode opcode) {
+INST two_op_nodest_inst(char *remainingLine, Opcode opcode) {
     // handle cases due to aliases, does this by modifying the remainingLine string.
     transform_start(remainingLine);
     switch (opcode) {
         case CMP:
-            return two_op_inst(remainingLine, address, SUBS);
+            return two_op_inst(remainingLine, SUBS);
         case CMN:
-            return two_op_inst(remainingLine, address, ADDS);
+            return two_op_inst(remainingLine, ADDS);
         case TST:
-            return two_op_inst(remainingLine, address, ANDS);
+            return two_op_inst(remainingLine, ANDS);
         default:
             perror("Error in single_op_inst_alias call. Invalid arguments");
             exit(EXIT_FAILURE);

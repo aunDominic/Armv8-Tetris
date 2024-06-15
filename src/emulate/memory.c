@@ -26,7 +26,7 @@ void printMemory(int start, int end){
 }
 void printRegisters(){
     for (int i = 0; i < regCount; i++) {
-        printf("Register %d: %d\n", i, registers[i]);
+        printf("Register %d: %ld\n", i, registers[i]);
     }
 
 

@@ -1,7 +1,7 @@
 # NEW FILE STUFF FOR TESTING
 
 CC = gcc
-CFLAGS = -Wall -O0 -ggdb
+CFLAGS = -Wall -Wextra -g3
 
 # Define the targets
 TARGETS := assemble emulate
@@ -63,4 +63,4 @@ clean:
 # Cppcheck target
 .PHONY: cppcheck
 cppcheck:
-	cppcheck --check-level=exhaustive --enable=all,style,performance,portability,information,unusedFunction --inconclusive --std=c99 --language=c --suppress=missingIncludeSystem --checkers-report=checkers_report.txt $(SRC_DIR)
+	cppcheck --check-level=exhaustive --enable=all,style,performance,portability,information,unusedFunction --inconclusive --std=c99 --language=c --suppress=missingIncludeSystem $(SRC_DIR)

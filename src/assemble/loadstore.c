@@ -189,6 +189,7 @@ INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode) {
         modify_instruction(&instr, 22, 22, opcode == LDR ? 1 : 0);
 
         modify_instruction(&instr, 5, 9, reg_to_binary(parsed.Xn_SP));
+        int imm12;
 
         // now handle the different cases based on addressing modes
         switch (parsed.mode) {

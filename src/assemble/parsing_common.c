@@ -130,7 +130,7 @@ Shifter determineShift(char *remainingLine) {
     char *saveptr;
 
     // Skip leading whitespace
-    while (isspace(*remainingLine)) {
+    while (isspace((unsigned char) *remainingLine)) {
         remainingLine++;
     }
 

@@ -13,7 +13,7 @@
 #include "datatransfer.h"
 #include "branch.h"
 
-static void readFile(FILE *inputFile);
+static void readInputFile(const char *inputPath);
 
 // should be able to handle both stdoutput and file
 static void outputHandler(FILE *outputFile);
@@ -45,13 +45,9 @@ int main(const int argc, char **argv){
     // Errors are handled here.
 
     // Binary Loader start, handle command line arguments
-    FILE *inputFile, *outputFile = stdout;
-    // default outputFile to stdout
+    FILE *outputFile = stdout; // default outputFile to stdout
+
     printf("Emulator start.\n");
-    if ((inputFile = fopen(argv[1], "rb")) == NULL) {
-        perror("Error opening input file");
-        return EXIT_FAILURE;
-    }
 
     if (argc == 3) {
         // have 2 arguments, still need to check the files are valid
@@ -62,7 +58,7 @@ int main(const int argc, char **argv){
         }
     }
     printf("Attempting to read file: \n");
-    readFile(inputFile);
+    readInputFile(argv[1]); // opens and closes the file as we only need it at start
 
     // execute should be a loop
     execute();
@@ -70,9 +66,7 @@ int main(const int argc, char **argv){
     // program finished running so output the file
     outputHandler(outputFile);
 
-
     printf("Emulating running\n");
-    fclose(inputFile);
     fclose(outputFile);
     return EXIT_SUCCESS;
 }
@@ -81,7 +75,13 @@ int main(const int argc, char **argv){
 // honestly might be better for this to both take a path, open the file
 // and also close the file
 // returns void cus I'll probably just do exit();
-static void readFile(FILE *inputFile) {
+static void readInputFile(const char *inputPath) {
+    FILE *inputFile;
+    if ((inputFile = fopen(inputPath, "rb")) == NULL) {
+        perror("Error opening input file");
+        exit(EXIT_FAILURE);
+    }
+
     fseek(inputFile, 0L, SEEK_END); // Sets file pointer to the end
     size_t fileSize = ftell(inputFile); // basically returns the size of file in bytes
     rewind(inputFile); // put file pointer to start
@@ -100,6 +100,7 @@ static void readFile(FILE *inputFile) {
             printf("0x%8.8" PRIx32 ": %8.8" PRIx32 "\n", address, valAtAddress);
         }
     }
+    fclose(inputFile);
 }
 
 
@@ -180,7 +181,7 @@ static void execute() {
     // should call instructionHandler()
     INST instruction;
     while ((instruction = fetch()) != HALT){
-        printf("Fetching instruction...\n 0x%8.8" PRIx32 ": %8.8" PRIx32 "\n", programCounter, instruction);
+        printf("Fetching instruction...\n 0x%8.8" PRIx64 ": %8.8" PRIx32 "\n", programCounter, instruction);
         instructionHandler(instruction);
     }
 

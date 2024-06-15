@@ -20,6 +20,10 @@
 
 INST b_inst(const char *remainingLine, uint32_t address);
 INST b_cond(const char *remainingLine, uint32_t address, Opcode bOpCode);
-INST br_inst(char *remainingLine, uint32_t address);
+
+// br_inst branches to a value in a register so doesn't
+// need to do offsets from current address
+// hence doesn't need address as parameter
+INST br_inst(char *remainingLine);
 
 #endif //BRANCH_ASSEMBLY_H

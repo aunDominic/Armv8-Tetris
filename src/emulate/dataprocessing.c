@@ -59,7 +59,7 @@ static void writeReg(int reg, int64_t signedVal, int mode) {
         printf("writing to zero register - null"); //r
         return;
     } else {
-        printf("writing value %lld to register %d in %d mode\n", signedVal, reg, mode); //r
+        printf("writing value %ld to register %d in %d mode\n", signedVal, reg, mode); //r
         registers[reg] = (mode) ? signedVal : ((1LL << 32) - 1) & signedVal;
 
         return;
@@ -99,16 +99,7 @@ static int64_t lsr(uint64_t value, int shift_amount, int mode) {
         return result;
     }
 }
-//static int64_t asr(int64_t value, int shift_amount, int mode) {
-//    if (mode) {
-//        return value >> shift_amount;
-//    } else {
-//        value &= ((1LL << 32) - 1);
-//        int64_t result = value >> shift_amount;
-//        result = ((1LL << 32) - 1) & result;
-//        return result;
-//    }
-//}
+
 static int64_t asr(int64_t value, int shift_amount, int mode) {
     switch (mode) {
         case 0: {
@@ -116,19 +107,11 @@ static int64_t asr(int64_t value, int shift_amount, int mode) {
             uint32_t uval = (uint32_t)value;
             uint32_t result = (uval >> shift_amount) | -((uval & 0x80000000) >> shift_amount);
             return (int32_t)result;
-
-
-//            value &= ((1LL << 32) - 1);
-//            int64_t signBit32 = (value >> 31) & 1;
-//            value >>= shift_amount;
-//            int64_t signExtension32 = (signBit32) ? -1LL << (32 - shift_amount) : 0b0;
-//            printf("asr here!\n");
-//            return ((1LL << 32) - 1) & (value | signExtension32);
         }
         case 1: {
-            int signBit64 = (value >> 63) & 1;
+            int signBit64 = (value < 0) ? 1 : 0;
             value >>= shift_amount;
-            int64_t signExtension64 = (signBit64) ? -1LL << (64 - shift_amount) : 0;
+            int64_t signExtension64 = (signBit64) ? ~((1LL << (64 - shift_amount)) - 1) : 0;
             return value | signExtension64;
         }
         default:
@@ -147,7 +130,7 @@ static int64_t ror(uint64_t value, int shift_amount, int mode) {
             value &= ((1LL << 32) - 1);
             return ((value >> shift_amount) | (value << (32 - shift_amount))) & ((1LL << 32) - 1);
         case 1:
-            printf("ROR %llx: %llx %llx %llx", value, fir, sec, res);
+            printf("ROR %lx: %lx %lx %lx", value, fir, sec, res);
             return res;
         default:
             return value;
@@ -166,20 +149,20 @@ static void updateFlags(int64_t a, int64_t b, int64_t result, int opc, int mode)
 
     pstate.N = (mode) ? (extractBits(result, 63, 63)) : (extractBits(result, 31, 31));
     pstate.Z = (mode) ? result == 0 : (((1LL << 32) - 1) & result) == 0 ;
-    printf("Result: %llx\n", result);
+    printf("Result: %lx\n", result);
     printf("N Flag: %d\n", pstate.N);
 
     switch ((Code)opc) {
 
         case ADDS: {
             pstate.C = (uint64_t) result < (uint64_t) a;
-            pstate.V = ((a < 0 == b < 0) && (result < 0 != a < 0));
+            pstate.V = (((a < 0) == (b < 0)) && ((result < 0) != (a < 0)));
             break;
         }
 
         case SUBS: {
             pstate.C = !((uint64_t) a < (uint64_t) b);
-            pstate.V = ((a < 0 != b < 0) && (result < 0 == b < 0));
+            pstate.V = ((a < 0) != (b < 0)) && ((result < 0) == (b < 0));
             break;
         }
 
@@ -277,20 +260,20 @@ static bool wideMoveImmInstProcessor(INST instruction) {
     switch ((Code)opc) {
 
         case MOVN: {
-            printf("movn - value: %llu - register.no: %d - mode: %d\n", ~op, rdI, sf); //r
+            printf("movn - value: %lu - register.no: %d - mode: %d\n", ~op, rdI, sf); //r
             writeReg(rdI, ~op, sf);
             break;
         }
         case MOVZ: {
-            printf("movz - value: %llu - register.no: %x - mode: %d\n", op, rdI, sf); //r
+            printf("movz - value: %lu - register.no: %x - mode: %d\n", op, rdI, sf); //r
             writeReg(rdI, op, sf);
             break;
         }
         case MOVK: {
             printf("Shift value: %d\n", shiftValue);
-            printf("Register: %llx\n", registers[rdI]);
+            printf("Register: %lx\n", registers[rdI]);
             int64_t result = modify_bits(registers[rdI],shiftValue, shiftValue + 15, imm16);
-            printf("Result: %llx\n", result);
+            printf("Result: %lx\n", result);
 
             writeReg(rdI, result, sf);
             break;
@@ -330,11 +313,11 @@ static bool multiplyRegInstProcessor(INST instruction) {
     switch ((MultiplyOpType)x) {
         case MADD:
             result = ra + (rn * rm);
-            printf("MADD - value: %lld \n", result); //r
+            printf("MADD - value: %ld \n", result); //r
         break;
         case MSUB:
             result = ra - (rn * rm);
-            printf("MSUB bit logic - value: %lld \n", result); //r
+            printf("MSUB bit logic - value: %ld \n", result); //r
         break;
         default:
             return false;
@@ -477,7 +460,7 @@ static bool bitLogicRegInstProcessor(INST instruction) {
             return false;
     }
 
-    printf("Operand2: %llx\n", operand2);
+    printf("Operand2: %lx\n", operand2);
     printf("rmI: %x\n", rmI);
     INST code = (opc << 1) + n;
 
@@ -486,37 +469,37 @@ static bool bitLogicRegInstProcessor(INST instruction) {
     switch ((Code) code) {
         case AND:
             result = rn & operand2;
-            printf("and bit logic - value: %lld \n", result); //r
+            printf("and bit logic - value: %ld \n", result); //r
             break;
         case BIC:
             result = rn & ~operand2;
-            printf("bic bit logic - value: %lld \n", result); //r
+            printf("bic bit logic - value: %ld \n", result); //r
             break;
         case ORR:
             result = rn | operand2;
-            printf("orr bit logic - value: %lld \n", result); //r
+            printf("orr bit logic - value: %ld \n", result); //r
             break;
         case ORN:
             result = rn | ~operand2;
-            printf("orn bit logic - value: %lld \n", result); //r
+            printf("orn bit logic - value: %ld \n", result); //r
             break;
         case EOR:
             result = rn ^ operand2;
-            printf("eor bit logic - value: %lld \n", result); //r
+            printf("eor bit logic - value: %ld \n", result); //r
             break;
         case EON:
             result = rn ^ ~operand2;
-            printf("eor bit logic - value: %lld \n", result); //r
+            printf("eor bit logic - value: %ld \n", result); //r
             break;
         case ANDS:
             result = rn & operand2;
-            printf("ands bit logic - value: %lld \n", result); //r
+            printf("ands bit logic - value: %ld \n", result); //r
             updateFlags(rn, operand2, result, ANDS, sf);
             break;
         case BICS:
-            printf("rn: %llx\n", rn);
+            printf("rn: %lx\n", rn);
             result = rn & ~operand2;
-            printf("bics bit logic - value: %lld \n", result); //r
+            printf("bics bit logic - value: %ld \n", result); //r
             updateFlags(rn, operand2, result, BICS, sf);
             break;
         default:

@@ -65,6 +65,9 @@ static int64_t getAddress(INST instruction){
     if (isRegisterOffset(instruction)){
         return registers[XN] + registers[XM];
     }
+
+    perror("Invalid instruction passed in getAddress or something else\n");
+    exit(EXIT_FAILURE);
 }
 
 /*

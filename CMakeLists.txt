@@ -35,4 +35,5 @@ add_library(Emulator STATIC
 		src/assemble/data_processing_assembly.h
 		src/assemble/parsing_common.c
 		src/assemble/parsing_common.h
+		src/emulate/bitmanipulation.c
 )

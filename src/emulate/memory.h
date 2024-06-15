@@ -10,7 +10,7 @@
 typedef uint8_t BYTE;
 typedef int32_t INST;
 #define regCount (31)
-#define memSize (1 << 30)
+#define memSize (1 << 21)
 extern const int32_t HALT;
 extern int64_t registers[regCount];
 
