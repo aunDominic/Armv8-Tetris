@@ -52,6 +52,13 @@ Color tetr_colors[8] = {
     PURPLE,
 };
 
+//----------------------------------------------------------------------------------
+// Gameplay Movement Handling Function Defintions
+//----------------------------------------------------------------------------------
+
+// This will handle keyboard inputs and call the appropiate board functions
+// ie will handle rotation, move piece horizontally, hard drop, soft drop etc
+void HandleInput(void);
 
 //----------------------------------------------------------------------------------
 // Gameplay Screen Functions Definition
@@ -77,12 +84,8 @@ void UpdateGameplayScreen(void)
     else if (IsKeyDown(KEY_A)) player1.x -= 3.0f;
     if (framesCounter % GRAVITY_TIME == 0) gravity();
 
-    if (IsKeyPressed(KEY_LEFT)) move_piece_left();
-    if (IsKeyPressed(KEY_RIGHT)) move_piece_right();
-    if (IsKeyPressed(KEY_UP)) rotate_piece_clockwise();
-    if (IsKeyPressed(KEY_DOWN)) rotate_piece_counter_clockwise();
-    if (IsKeyPressed(KEY_SPACE)) hard_drop();
-    if (IsKeyPressed(KEY_R)) init_board();
+
+    HandleInput();
     framesCounter++;
 
     set_shadow();
@@ -124,8 +127,8 @@ void DrawGameplayScreen(void)
         // Draw full scene with first camera
 
         // DRAW BLOCKS
-        for (int i = 0; i < BOARD_HEIGHT + 4; i++) {
-            for (int j = 0; j < BOARD_WIDTH; j++) { // X coordinates, col number??
+        for (int i = 0; i < ROW + 4; i++) {
+            for (int j = 0; j < COL; j++) { // X coordinates, col number??
                 if (board[i][j] == FLOATING)
                     DrawRectangle(BLOCK_SIZE * j, BLOCK_SIZE * i, BLOCK_SIZE, BLOCK_SIZE, tetr_colors[piece]);
                 else
@@ -143,13 +146,13 @@ void DrawGameplayScreen(void)
         }
 
         // DRAW GRID LINES
-        for (int i = 0; i < BOARD_WIDTH + 1; i++) {
-            DrawLineV((Vector2){(float)BLOCK_SIZE * i, BLOCK_SIZE * 4}, (Vector2){ (float)BLOCK_SIZE * i, (float)BLOCK_SIZE * (BOARD_HEIGHT + 4)}, LIGHTGRAY);
+        for (int i = 0; i < COL + 1; i++) {
+            DrawLineV((Vector2){(float)BLOCK_SIZE * i, BLOCK_SIZE * 4}, (Vector2){ (float)BLOCK_SIZE * i, (float)BLOCK_SIZE * (ROW + 4)}, LIGHTGRAY);
             DrawText(TextFormat("%i", i), BLOCK_SIZE * i, -100, 10, BLACK);
         }
         DrawText(TextFormat("Current piece:%i", piece), -10, -10, 30, BLACK);
-        for (int i = 4; i < BOARD_HEIGHT + 4 + 1; i++) {
-            DrawLineV((Vector2){0, (float)BLOCK_SIZE * i}, (Vector2){(float)BLOCK_SIZE * BOARD_WIDTH, (float)BLOCK_SIZE * i}, LIGHTGRAY);
+        for (int i = 4; i < ROW + 4 + 1; i++) {
+            DrawLineV((Vector2){0, (float)BLOCK_SIZE * i}, (Vector2){(float)BLOCK_SIZE * COL, (float)BLOCK_SIZE * i}, LIGHTGRAY);
             DrawText(TextFormat("%i", i), 0, BLOCK_SIZE * i, 10, BLACK);
         }
         EndMode2D();
@@ -177,4 +180,13 @@ void UnloadGameplayScreen(void)
 int FinishGameplayScreen(void)
 {
     return finishScreen;
+}
+
+void HandleInput(void) {
+    if (IsKeyPressed(KEY_LEFT)) move_piece_left();
+    if (IsKeyPressed(KEY_RIGHT)) move_piece_right();
+    if (IsKeyPressed(KEY_UP)) rotate_piece_clockwise();
+    if (IsKeyPressed(KEY_DOWN)) rotate_piece_counter_clockwise();
+    if (IsKeyPressed(KEY_SPACE)) hard_drop();
+    if (IsKeyPressed(KEY_R)) init_board();
 }

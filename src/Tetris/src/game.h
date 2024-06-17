@@ -1,5 +1,5 @@
-#define BOARD_WIDTH 10
-#define BOARD_HEIGHT 20
+#define COL 10
+#define ROW 20
 #define MAX_PIECE_SIZE 4
 
 typedef struct{
@@ -8,7 +8,7 @@ typedef struct{
 } pair;
 
 
-extern int board[BOARD_HEIGHT + 4][BOARD_WIDTH];
+extern int board[ROW + 4][COL];
 
 extern int piece;
 
@@ -35,6 +35,11 @@ void rotate_piece_counter_clockwise(void);
 void init_board(void);
 
 void hard_drop(void);
+
+void soft_drop(void);
+
+// stores a piece in a temporary buffer so you can swap your current piece
+void hold_piece(void);
 
 void set_shadow(void);
 

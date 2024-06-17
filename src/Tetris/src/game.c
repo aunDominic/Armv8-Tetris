@@ -5,6 +5,7 @@
 #include "game.h"
 #include <time.h>
 #include <stdlib.h>
+#include "random_piece.h"
 
 /* Board Configuration
                       xcord = WIDTH
@@ -20,7 +21,7 @@
     x = 0
 */
 
-#define START_POS_X (BOARD_WIDTH / 2)
+#define START_POS_X (COL / 2)
 #define START_POS_Y 0
 
 
@@ -44,7 +45,7 @@ static void redraw_piece(); // Draws the current piece on the screen
 // Initialises board 
 // Extra 4 units of height for pieces to spawn.
 // These 4 lines may not be have any pieces placed in them.
-int board[BOARD_HEIGHT + 4][BOARD_WIDTH] = {EMPTY}; // Initialise board to empty
+int board[ROW + 4][COL] = {EMPTY}; // Initialise board to empty
 int piece = TETR_I; // Current piece in hand
 int rotation = 0; // Current rotation.
 // To get the current tetrimino
@@ -54,8 +55,8 @@ pair shadow_pos = {.x = START_POS_X, .y = START_POS_Y}; // coordinate of left co
 
 
 void init_board(void){
-    for (int i = 0; i < BOARD_HEIGHT + 4; i++){
-        for (int j = 0; j < BOARD_WIDTH; j++){
+    for (int i = 0; i < ROW + 4; i++){
+        for (int j = 0; j < COL; j++){
             board[i][j] = EMPTY;
         }
     }
@@ -65,12 +66,12 @@ void init_board(void){
     set_shadow();
 }
 static bool is_line_filled(int line[]){
-    for (int i = 0; i < BOARD_WIDTH; i++) if (line[i] == EMPTY) return false;
+    for (int i = 0; i < COL; i++) if (line[i] == EMPTY) return false;
     return true;
 }
 
 static void clear_line(int line[]){
-    for (int i = 0; i < BOARD_WIDTH; i++) line[i] = CLEAR;
+    for (int i = 0; i < COL; i++) line[i] = CLEAR;
 }
 
 static void shift_lines_down(int l, int u){
@@ -85,7 +86,7 @@ static void shift_lines_down(int l, int u){
             cnt_clear_lines++;
         } 
         else if (cnt_clear_lines > 0){
-            for (int j = 0; j < BOARD_WIDTH; j++){
+            for (int j = 0; j < COL; j++){
                 board[i+cnt_clear_lines][j] = board[i][j];
                 board[i][j] = EMPTY; 
             }
@@ -100,7 +101,7 @@ static void shift_lines_down(int l, int u){
 
 
 void clear_lines(int l, int u){
-    assert(l < BOARD_HEIGHT+4 && u < BOARD_HEIGHT+4);
+    assert(l < ROW+4 && u < ROW+4);
     assert(l < u);
 
     for (int i = l; i <= u; i++){
@@ -127,13 +128,16 @@ void set_piece(void){
             }
         }
     }
-    clear_lines(0, BOARD_HEIGHT+3);
+    clear_lines(0, ROW+3);
 
     printf("debug: Sucessfully set piece. Piece: %d at (%d, %d)\n", piece, piece_pos.x, piece_pos.y);
 
-    piece = (rand() % 7) + 1;
+    // code for generating piece and setting it in right place
+    // sidenote: some of this code might be needed to implement hold_piece
+    piece = generate_piece();
     piece_pos.x = START_POS_X;
     piece_pos.y = START_POS_Y;
+
     printBoard();
     printTetriminoes(piece, rotation);
     redraw_piece();
@@ -162,9 +166,9 @@ static bool is_valid_orientation(void){
             if (tetriminoes[piece][rotation][i][j] == piece &&
                 (
                     piece_pos.x + j < 0 
-                ||  piece_pos.x + j >= BOARD_WIDTH
+                ||  piece_pos.x + j >= COL
                 ||  piece_pos.y + i < 0 
-                ||  piece_pos.y + i >= BOARD_HEIGHT + 4
+                ||  piece_pos.y + i >= ROW + 4
                 ||  (board[piece_pos.y + i][piece_pos.x + j] != EMPTY) &&
                     board[piece_pos.y + i][piece_pos.x + j] != FLOATING) ){
                 return false;
@@ -195,21 +199,6 @@ void move_piece_right(void){
     piece_pos.x++;
     redraw_piece();
 }
-
-// void rotate_piece_clockwise(void){
-//     int temp = rotation;
-//     rotation++;
-//     rotation %= 4;
-//
-//     if (!is_valid_orientation()){
-//         rotation = temp;
-//         return;
-//     }
-//     rotation = temp;
-//     clear_draw_piece();
-//     rotation++; rotation %= 4;
-//     redraw_piece();
-// }
 
 void rotate_piece_clockwise(void){
     int temp = rotation;
@@ -293,21 +282,6 @@ void rotate_piece_counter_clockwise(void){
     redraw_piece();
 }
 
-// void rotate_piece_counter_clockwise(void){
-//     int temp = rotation;
-//     rotation--;
-//     if (rotation < 0) rotation += 4;
-//     if (!is_valid_orientation()){
-//         rotation = temp;
-//         return;
-//     }
-//     rotation = temp;
-//     clear_draw_piece();
-//     rotation--;
-//     if (rotation < 0) rotation += 4;
-//     redraw_piece();
-// }
-
 void hard_drop(void){
     clear_draw_piece();
     piece_pos.x = shadow_pos.x;
@@ -316,13 +290,13 @@ void hard_drop(void){
 }
 void set_shadow(void){
     shadow_pos.x = piece_pos.x;
-    for (int y = piece_pos.y; y < BOARD_HEIGHT + 4; y++){
+    for (int y = piece_pos.y; y < ROW + 4; y++){
         for (int i = 0; i < MAX_PIECE_SIZE; i++){ // For every row
             for (int j = 0; j < MAX_PIECE_SIZE; j++){ // For every column
                 if (tetriminoes[piece][rotation][i][j] == piece && 
                 board[y + i][j + piece_pos.x] != EMPTY &&
                 board[y + i][j + piece_pos.x] != FLOATING ||
-                (tetriminoes[piece][rotation][i][j] == piece && y + i >= BOARD_HEIGHT + 4)){
+                (tetriminoes[piece][rotation][i][j] == piece && y + i >= ROW + 4)){
                     shadow_pos.y = y-1;
                     return;
                 }
@@ -341,7 +315,7 @@ void gravity(void){
             if (tetriminoes[piece][rotation][i][j] == piece && 
                 board[piece_pos.y + i + 1][j + piece_pos.x] != EMPTY &&
                 board[piece_pos.y + i + 1][j + piece_pos.x] != FLOATING || 
-                (tetriminoes[piece][rotation][i][j] == piece && piece_pos.y + i + 1 >= BOARD_HEIGHT + 4)
+                (tetriminoes[piece][rotation][i][j] == piece && piece_pos.y + i + 1 >= ROW + 4)
                ){
                 set_piece();
 
@@ -358,20 +332,21 @@ void gravity(void){
 }
 
 bool block_is_filled(int i, int j){
-
     return board[i][j] != EMPTY;
 }
 
 
 static void printBoard(){
     printf("New Board State, Current Piece: %d\n", piece);
-    for (int i = 3; i < BOARD_HEIGHT + 4; i++){
-        for (int j = 0; j < BOARD_WIDTH; j++){
+    for (int i = 3; i < ROW + 4; i++){
+        for (int j = 0; j < COL; j++){
             printf("%d", board[i][j]);
         }
         printf("     y = %d\n", i);
     }
 }
+
+
 // int main(){
 //     int i =0;
 //     while (i < 50){

@@ -12,6 +12,10 @@
 *
 ********************************************************************************************/
 
+#include <stddef.h>
+#include <stdlib.h>
+#include <time.h>
+
 #include "raylib.h"
 #include "screens.h"    // NOTE: Declares global (extern) variables and screens functions
 
@@ -74,6 +78,9 @@ int main(void)
     // Setup and init first screen
     currentScreen = LOGO;
     InitLogoScreen();
+
+    // Setup random number generator
+    srand(time(NULL));
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, 60, 1);

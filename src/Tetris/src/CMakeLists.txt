@@ -17,6 +17,8 @@ add_library(tetris STATIC
 		tetriminoes.c
 		tetriminoes.h
 		game.c
-		network.c)
+		network.c
+		random_piece.c
+		random_piece.h)
 
 target_link_libraries(tetris raylib)

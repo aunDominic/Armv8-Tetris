@@ -5,7 +5,7 @@ LDFLAGS_LINUX = -lraylib -lGL -lm -lpthread -ldl -lrt -lX11
 LDFLAGS_MACOS = -framework CoreVideo -framework IOKit -framework Cocoa -framework GLUT -framework OpenGL ../lib/libraylib.a -I../include
 
 # Source files
-SRC = raylib_game.c tetriminoes.c game.c screen_ending.c screen_gameplay.c screen_logo.c screen_options.c screen_title.c
+SRC = raylib_game.c tetriminoes.c game.c screen_ending.c screen_gameplay.c screen_logo.c screen_options.c screen_title.c random_piece.c
 OBJ = $(SRC:.c=.o)
 
 # Targets
