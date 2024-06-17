@@ -12,6 +12,8 @@ extern int board[ROW + 4][COL];
 
 extern int piece;
 
+extern int hold_piece_buffer;
+
 extern pair piece_pos;
 
 extern pair shadow_pos;
@@ -36,7 +38,7 @@ void init_board(void);
 
 void hard_drop(void);
 
-void soft_drop(void);
+void soft_drop(int framesCounter);
 
 // stores a piece in a temporary buffer so you can swap your current piece
 void hold_piece(void);

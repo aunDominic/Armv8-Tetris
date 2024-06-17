@@ -47,12 +47,15 @@ static void redraw_piece(); // Draws the current piece on the screen
 // These 4 lines may not be have any pieces placed in them.
 int board[ROW + 4][COL] = {EMPTY}; // Initialise board to empty
 int piece = TETR_I; // Current piece in hand
+int hold_piece_buffer = 0; // set as 0 by default
 int rotation = 0; // Current rotation.
 // To get the current tetrimino
 // We use tetriminoes[piece][rotation] -> a 4x4 array containing the tetrimino
 pair piece_pos = {.x = START_POS_X, .y = START_POS_Y}; // coordinate of the left corner of the piece
 pair shadow_pos = {.x = START_POS_X, .y = START_POS_Y}; // coordinate of left corner of the piece's shadow 
 
+static bool can_hold = true; // this is used so people can't infinitely spam the hold button to get extra time
+// can_hold resets after every successful piece placement
 
 void init_board(void){
     for (int i = 0; i < ROW + 4; i++){
@@ -60,6 +63,9 @@ void init_board(void){
             board[i][j] = EMPTY;
         }
     }
+    srand(time(NULL));
+    piece = generate_piece();
+    rotation = 0;
     piece_pos.x = START_POS_X;
     piece_pos.y = START_POS_Y;
     redraw_piece();
@@ -137,6 +143,7 @@ void set_piece(void){
     piece = generate_piece();
     piece_pos.x = START_POS_X;
     piece_pos.y = START_POS_Y;
+    can_hold = true;
 
     printBoard();
     printTetriminoes(piece, rotation);
@@ -288,6 +295,15 @@ void hard_drop(void){
     piece_pos.y = shadow_pos.y;
     set_piece();
 }
+
+void soft_drop(int framesCounter) {
+    static int SOFT_DROP_RATE = 5; // adjust this value as you see fit
+
+    if (framesCounter % SOFT_DROP_RATE == 0) {
+        gravity();
+    }
+}
+
 void set_shadow(void){
     shadow_pos.x = piece_pos.x;
     for (int y = piece_pos.y; y < ROW + 4; y++){
@@ -329,6 +345,34 @@ void gravity(void){
     piece_pos.y++;
     redraw_piece();
     // printf("Piece has fallen by 1\n");
+}
+
+// hold pieces in a temporary buffer, probably a global variable defined in game.h
+void hold_piece(void) {
+    // swaps current piece and piece in buffer
+    // then sets piece to top of board again
+
+    if (!can_hold) {
+        return;
+    }
+
+    // handle case if hold_piece_buffer doesn't hold a piece ie at the start
+    if (hold_piece_buffer == 0) {
+        hold_piece_buffer = piece;
+        piece = generate_piece();
+        clear_draw_piece();
+    } else {
+        // hold_piece is not 0 so it actually has a valid piece stored
+        clear_draw_piece();
+        int temp = piece;
+        piece = hold_piece_buffer;
+        hold_piece_buffer = temp;
+    }
+
+    rotation = 0;
+    piece_pos.x = START_POS_X;
+    piece_pos.y = START_POS_Y;
+    can_hold = false;
 }
 
 bool block_is_filled(int i, int j){
