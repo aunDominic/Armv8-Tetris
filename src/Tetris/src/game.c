@@ -195,34 +195,118 @@ void move_piece_right(void){
     piece_pos.x++;
     redraw_piece();
 }
+
+// void rotate_piece_clockwise(void){
+//     int temp = rotation;
+//     rotation++;
+//     rotation %= 4;
+//
+//     if (!is_valid_orientation()){
+//         rotation = temp;
+//         return;
+//     }
+//     rotation = temp;
+//     clear_draw_piece();
+//     rotation++; rotation %= 4;
+//     redraw_piece();
+// }
+
 void rotate_piece_clockwise(void){
     int temp = rotation;
-    rotation++;
-    rotation %= 4;
+    rotation = (rotation + 1) % 4;
+    pair temp_piece_pos = piece_pos;
 
-    if (!is_valid_orientation()){
+    if (is_valid_orientation()) {
         rotation = temp;
+        clear_draw_piece();
+        rotation++; rotation %= 4;
+        redraw_piece();
         return;
     }
+
+    // not a valid position so
+    // Try the new rotation with wall kicks
+    for (int i = 0; i < 5; i++) {
+        piece_pos = temp_piece_pos;
+
+        piece_pos.x = piece_pos.x + wall_kicks[piece][rotation][i][0];
+        piece_pos.y = piece_pos.y + wall_kicks[piece][rotation][i][1];
+        pair new_pos = {piece_pos.x, piece_pos.y};
+
+        if (is_valid_orientation()) {
+            printf("Wallkick successful clockwise\n");
+            rotation = temp;
+            piece_pos = temp_piece_pos;
+            clear_draw_piece(); // reset position so we can clear it
+            rotation = (rotation + 1) % 4;
+            piece_pos = new_pos;
+            redraw_piece(); // apply the new thing so we can redraw
+            return;
+        }
+    }
+
+    piece_pos = temp_piece_pos;
     rotation = temp;
     clear_draw_piece();
-    rotation++; rotation %= 4;
     redraw_piece();
 }
+
 void rotate_piece_counter_clockwise(void){
     int temp = rotation;
     rotation--;
     if (rotation < 0) rotation += 4;
-    if (!is_valid_orientation()){
+    pair temp_piece_pos = piece_pos;
+
+    if (is_valid_orientation()) {
         rotation = temp;
+        clear_draw_piece();
+        rotation--;
+        if (rotation < 0) rotation += 4;
+        redraw_piece();
         return;
     }
+
+    // Try the new rotation with wall kicks
+    for (int i = 0; i < 5; i++) {
+        piece_pos = temp_piece_pos;
+
+        piece_pos.x = piece_pos.x - wall_kicks[piece][rotation][i][0];
+        piece_pos.y = piece_pos.y - wall_kicks[piece][rotation][i][1];
+        pair new_pos = {piece_pos.x, piece_pos.y};
+
+        if (is_valid_orientation()) {
+            printf("Wallkick successful counter-clockwise\n");
+            rotation = temp;
+            piece_pos = temp_piece_pos;
+            clear_draw_piece(); // set back to previous to clear it
+            rotation--;
+            if (rotation < 0) rotation += 4;
+            piece_pos = new_pos; // reapply changes to draw it
+            redraw_piece();
+            return;
+        }
+    }
+
+    piece_pos = temp_piece_pos;
     rotation = temp;
     clear_draw_piece();
-    rotation--;
-    if (rotation < 0) rotation += 4;
     redraw_piece();
 }
+
+// void rotate_piece_counter_clockwise(void){
+//     int temp = rotation;
+//     rotation--;
+//     if (rotation < 0) rotation += 4;
+//     if (!is_valid_orientation()){
+//         rotation = temp;
+//         return;
+//     }
+//     rotation = temp;
+//     clear_draw_piece();
+//     rotation--;
+//     if (rotation < 0) rotation += 4;
+//     redraw_piece();
+// }
 
 void hard_drop(void){
     clear_draw_piece();
@@ -251,7 +335,7 @@ void gravity(void){
     // 
     // If the piece moving the piece down collides with any block, 
     // piece_pos represents the coordinates of the left corner of the piece
-    printf("Attempting gravity\n");
+    // printf("Attempting gravity\n");
     for (int i = 0; i < MAX_PIECE_SIZE; i++){ // For every row
         for (int j = 0; j < MAX_PIECE_SIZE; j++){ // For every column
             if (tetriminoes[piece][rotation][i][j] == piece && 
@@ -270,7 +354,7 @@ void gravity(void){
     clear_draw_piece();
     piece_pos.y++;
     redraw_piece();
-    printf("Piece has fallen by 1\n");
+    // printf("Piece has fallen by 1\n");
 }
 
 bool block_is_filled(int i, int j){
