@@ -44,7 +44,7 @@ static Rectangle player1 = { 200, 200, BLOCK_SIZE, BLOCK_SIZE };
 // DEFINITIONS for DAS MOVEMENT
 // Constants for ARR and DAS
 // Adjust ARR, DAS, cancelDASOnDirectionChange as you see fit
-#define ARR 0  // Automatic Repeat Rate in frames
+#define ARR 4  // Automatic Repeat Rate in frames
 #define DAS 9 // Delayed Auto Shift in frames
 
 // Boolean to control whether DAS should be canceled when changing directions
