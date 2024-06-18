@@ -57,7 +57,7 @@ int rotation = 0; // Current rotation.
 pair piece_pos = {.x = START_POS_X, .y = START_POS_Y}; // coordinate of the left corner of the piece
 pair shadow_pos = {.x = START_POS_X, .y = START_POS_Y}; // coordinate of left corner of the piece's shadow
 
-static bool can_hold = true; // this is used so people can't infinitely spam the hold button to get extra time
+bool can_hold = true; // this is used so people can't infinitely spam the hold button to get extra time
 // can_hold resets after every successful piece placement
 
 void init_board(void){

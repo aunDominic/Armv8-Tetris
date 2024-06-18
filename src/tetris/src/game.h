@@ -16,6 +16,8 @@ extern TetrominoType piece;
 
 extern TetrominoType hold_piece_buffer;
 
+extern bool can_hold;
+
 extern TetrominoType next_five_pieces[5];
 
 extern pair piece_pos;
