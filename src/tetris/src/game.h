@@ -16,6 +16,8 @@ extern int piece;
 
 extern int hold_piece_buffer;
 
+extern TetrominoType next_five_pieces[5];
+
 extern pair piece_pos;
 
 extern pair shadow_pos;

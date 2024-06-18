@@ -40,6 +40,7 @@ void set_piece(); // Places the piece on the board.
 static bool is_valid_orientation(); // Checks if the current orientation of the piece is valid (ie its position and rotation do not collide with the board)
 static void clear_draw_piece(); // Clears the current piece in hand from the board
 static void redraw_piece(); // Draws the current piece on the screen
+static TetrominoType get_next_piece(); // updates the `next_five_pieces` buffer and returns the upcoming piece
 /* ////////////////////// */
 
 
@@ -49,6 +50,7 @@ static void redraw_piece(); // Draws the current piece on the screen
 int board[ROW + 4][COL] = {EMPTY}; // Initialise board to empty
 int piece = TETR_I; // Current piece in hand
 int hold_piece_buffer = 0; // set as 0 by default
+TetrominoType next_five_pieces[5] = { 0 }; // initialized to 0
 int rotation = 0; // Current rotation.
 // To get the current tetrimino
 // We use tetriminoes[piece][rotation] -> a 4x4 array containing the tetrimino
@@ -65,7 +67,7 @@ void init_board(void){
         }
     }
     srand(time(NULL));
-    piece = (int)generate_piece();
+    piece = (int)get_next_piece();
     rotation = 0;
     piece_pos.x = START_POS_X;
     piece_pos.y = START_POS_Y;
@@ -141,7 +143,7 @@ void set_piece(void){
 
     // code for generating piece and setting it in right place
     // sidenote: some of this code might be needed to implement hold_piece
-    piece = (int)generate_piece();
+    piece = (int)get_next_piece();
     piece_pos.x = START_POS_X;
     piece_pos.y = START_POS_Y;
     can_hold = true;
@@ -360,7 +362,7 @@ void hold_piece(void) {
     // handle case if hold_piece_buffer doesn't hold a piece ie at the start
     if (hold_piece_buffer == 0) {
         hold_piece_buffer = piece;
-        piece = (int)generate_piece();
+        piece = (int)get_next_piece();
         clear_draw_piece();
     } else {
         // hold_piece is not 0 so it actually has a valid piece stored
@@ -380,7 +382,6 @@ bool block_is_filled(int i, int j){
     return board[i][j] != EMPTY;
 }
 
-
 static void printBoard(){
     printf("New Board State, Current Piece: %d\n", piece);
     for (int i = 3; i < ROW + 4; i++){
@@ -389,4 +390,22 @@ static void printBoard(){
         }
         printf("     y = %d\n", i);
     }
+}
+
+static TetrominoType get_next_piece() {
+    // get the next piece
+    const TetrominoType piece = generate_piece();
+
+    // grab the next five pieces and decode
+    const FivePiecesPreview preview = { .integerEncoding = viewNextFive() };
+
+    // update the buffer appropriately
+    next_five_pieces[0] = preview.pieces.first;
+    next_five_pieces[1] = preview.pieces.second;
+    next_five_pieces[2] = preview.pieces.third;
+    next_five_pieces[3] = preview.pieces.fourth;
+    next_five_pieces[4] = preview.pieces.fifth;
+
+    // return the next piece
+    return piece;
 }
