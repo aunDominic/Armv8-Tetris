@@ -9,7 +9,7 @@
 #include "raylib.h"
 #include "screens.h"
 
-#include "tetriminoes.h"
+#include "tetrominoes.h"
 #include "game.h"
 
 //----------------------------------------------------------------------------------
@@ -24,6 +24,12 @@ static int finishScreen = 0;
 #define JBLUE CLITERAL(Color){0, 38, 255, 255}
 #define LIMEGREEN CLITERAL(Color){55, 255, 0, 255}
 #define SHADOW CLITERAL(Color){51, 51, 51, 150}
+
+// offsets for drawing the next 5
+#define NEXT_FIVE_OFFSET_X ((COL + 1) * BLOCK_SIZE)
+#define NEXT_FIVE_OFFSET_Y (4 * BLOCK_SIZE)
+
+
 static Rectangle player1 = { 200, 200, BLOCK_SIZE, BLOCK_SIZE };
 
 // DEFINITIONS for DAS MOVEMENT
@@ -60,6 +66,10 @@ Color tetr_colors[8] = {
 // This will handle keyboard inputs and call the appropiate board functions
 // ie will handle rotation, move piece horizontally, hard drop, soft drop etc
 void HandleInput(int framesCounter);
+
+/// This will draw the provided piece to whatever thing is currently enabled,
+/// with the top-right corner of the piece being specified with the offsets
+void DrawPiece(int posX, int posY, TetrominoType piece, TetrominoRotation rotation, Color color);
 
 //----------------------------------------------------------------------------------
 // Gameplay Screen Functions Definition
@@ -130,6 +140,15 @@ void DrawGameplayScreen(void)
     BeginMode2D(camera);
     // Draw full scene with first camera
 
+    // DRAW NEXT 5 PIECES
+    for (int i = 0; i < 5; i++) {
+        DrawPiece(NEXT_FIVE_OFFSET_X,
+            NEXT_FIVE_OFFSET_Y + i * TETROMINO_SIZE_Y * BLOCK_SIZE,
+            next_five_pieces[i],
+            0, // default rotation upright
+            tetr_colors[next_five_pieces[i]]);
+    }
+
     // DRAW BLOCKS
     for (int i = 0; i < ROW + 4; i++) {
         for (int j = 0; j < COL; j++) { // X coordinates, col number??
@@ -144,7 +163,7 @@ void DrawGameplayScreen(void)
         for (int j = 0; j < MAX_PIECE_SIZE; j++) {
             int xcord = shadow_pos.x + j;
             int ycord = shadow_pos.y + i;
-            if (tetriminoes[piece][rotation][i][j] == piece)
+            if (tetrominoes[piece][rotation][i][j] == piece)
                 DrawRectangle(BLOCK_SIZE * xcord, BLOCK_SIZE * ycord, BLOCK_SIZE, BLOCK_SIZE, SHADOW);
         }
     }
@@ -284,4 +303,25 @@ void HandleInput(int framesCounter) {
     if (IsKeyPressed(KEY_R)) {
         init_board();
     }
+}
+
+void DrawPiece(
+    const int posX,
+    const int posY,
+    const TetrominoType piece,
+    const TetrominoRotation rotation,
+    const Color color)
+{
+    for (int y = 0; y < TETROMINO_SIZE_Y; y++)
+        for (int x = 0; x < TETROMINO_SIZE_X; x++) {
+            // don't draw empty tetromino values
+            if (tetrominoes[(int)piece][rotation][y][x] == TETROMINO_EMPTY) continue;
+
+            DrawRectangle(
+                posX + x * BLOCK_SIZE,
+                posY + y * BLOCK_SIZE,
+                BLOCK_SIZE,
+                BLOCK_SIZE,
+                color);
+        }
 }

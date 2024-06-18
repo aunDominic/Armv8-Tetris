@@ -1,6 +1,9 @@
 #ifndef TETRIMINOES_H
 #define TETRIMINOES_H
 
+#define TETROMINO_SIZE_X 4
+#define TETROMINO_SIZE_Y 4
+
 typedef enum {
     EMPTY,
     TETR_O,
@@ -12,7 +15,7 @@ typedef enum {
     TETR_T,
     CLEAR,
     FLOATING,
-} Tetriminoes_type;
+} Tetrominoes_type;
 
 /// Specifies the usual tetrominoes types: O,I,S,Z,L,J,T \n
 /// as well as the `EMPTY` tetromino
@@ -27,13 +30,15 @@ typedef enum {
     TETROMINO_T = 7,
 } TetrominoType;
 
+typedef int TetrominoRotation;
+
 // Specifies the 7 tetrominoes and its 4 rotations
 // First element in the array is empty
-extern int tetriminoes[8][4][4][4];
+extern TetrominoType tetrominoes[8][4][TETROMINO_SIZE_Y][TETROMINO_SIZE_X];
 extern int wall_kicks[8][4][5][2];
 
 void printTetrominoType(TetrominoType type);
 
-void printTetriminoes(TetrominoType piece, int rotation);
+void printTetrominoes(TetrominoType piece, TetrominoRotation rotation);
 
 #endif //TETRIMINOES_H

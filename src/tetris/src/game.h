@@ -12,9 +12,9 @@ typedef struct{
 
 extern int board[ROW + 4][COL];
 
-extern int piece;
+extern TetrominoType piece;
 
-extern int hold_piece_buffer;
+extern TetrominoType hold_piece_buffer;
 
 extern TetrominoType next_five_pieces[5];
 

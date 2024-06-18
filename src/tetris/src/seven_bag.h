@@ -7,7 +7,7 @@
 
 #ifndef SEVEN_BAG_H
 #define SEVEN_BAG_H
-#include "tetriminoes.h"
+#include "tetrominoes.h"
 
 #define BAG_SIZE 7
 

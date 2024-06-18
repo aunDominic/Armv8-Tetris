@@ -2,7 +2,7 @@
 #define RANDOM_PIECE_H
 
 #include "types.h"
-#include "tetriminoes.h"
+#include "tetrominoes.h"
 
 typedef union {
     u16_t integerEncoding: 15;

@@ -1,11 +1,11 @@
 #include <stdio.h>
 
-#include "tetriminoes.h"
+#include "tetrominoes.h"
 
-// Specifies the 7 tetriminoes and its 4 rotations
+// Specifies the 7 tetrominoes and its 4 rotations
 // First element in the array is empty
-int tetriminoes[8][4][4][4] = {
-    {},
+TetrominoType tetrominoes[8][4][TETROMINO_SIZE_Y][TETROMINO_SIZE_X] = {
+    { 0 },
     {
         {
             {0, 1, 1, 0}, // O Piece
@@ -255,10 +255,10 @@ void printTetrominoType(const TetrominoType type) {
     }
 }
 
-void printTetriminoes(TetrominoType piece, int rotation){
+void printTetrominoes(const TetrominoType piece, const TetrominoRotation rotation){
     for (int i = 0; i < 4; i++){
         for (int j = 0; j < 4; j++){
-            printf("%d", tetriminoes[(size_t) piece][rotation][i][j]);
+            printf("%d", tetrominoes[(size_t) piece][rotation][i][j]);
         }
         printf("\n");
     }
