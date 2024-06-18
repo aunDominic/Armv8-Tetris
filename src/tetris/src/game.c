@@ -361,9 +361,9 @@ void hold_piece(void) {
 
     // handle case if hold_piece_buffer doesn't hold a piece ie at the start
     if (hold_piece_buffer == 0) {
+        clear_draw_piece();
         hold_piece_buffer = piece;
         piece = get_next_piece();
-        clear_draw_piece();
     } else {
         // hold_piece is not 0 so it actually has a valid piece stored
         clear_draw_piece();

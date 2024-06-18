@@ -143,21 +143,21 @@ void DrawGameplayScreen(void)
     BeginMode2D(camera);
     // Draw full scene with first camera
 
-    // DRAW HOLD PIECE
-    DrawPiece(HOLD_PIECE_OFFSET_X,
-    HOLD_PIECE_OFFSET_Y,
-    hold_piece_buffer,
-    0, // default rotation upright
-    tetr_colors[hold_piece_buffer]);
-
-    // DRAW NEXT 5 PIECES
-    for (int i = 0; i < 5; i++) {
-        DrawPiece(NEXT_FIVE_OFFSET_X,
-            NEXT_FIVE_OFFSET_Y + i * TETROMINO_SIZE_Y * BLOCK_SIZE,
-            next_five_pieces[i],
-            0, // default rotation upright
-            tetr_colors[next_five_pieces[i]]);
-    }
+    // // DRAW HOLD PIECE
+    // DrawPiece(HOLD_PIECE_OFFSET_X,
+    // HOLD_PIECE_OFFSET_Y,
+    //     hold_piece_buffer,
+    //     0, // default rotation upright
+    //     tetr_colors[hold_piece_buffer]);
+    //
+    // // DRAW NEXT 5 PIECES
+    // for (int i = 0; i < 5; i++) {
+    //     DrawPiece(NEXT_FIVE_OFFSET_X,
+    //         NEXT_FIVE_OFFSET_Y + i * TETROMINO_SIZE_Y * BLOCK_SIZE,
+    //         next_five_pieces[i],
+    //         0, // default rotation upright
+    //         tetr_colors[next_five_pieces[i]]);
+    // }
 
     // DRAW BLOCKS
     for (int i = 0; i < ROW + 4; i++) {
