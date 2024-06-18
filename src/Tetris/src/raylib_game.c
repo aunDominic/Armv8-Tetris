@@ -12,6 +12,10 @@
 *
 ********************************************************************************************/
 
+#include <stddef.h>
+#include <stdlib.h>
+#include <time.h>
+
 #include "raylib.h"
 #include "screens.h"    // NOTE: Declares global (extern) variables and screens functions
 
@@ -32,7 +36,7 @@ Sound fxCoin = { 0 };
 // Local Variables Definition (local to this module)
 //----------------------------------------------------------------------------------
 static const int screenWidth = 800;
-static const int screenHeight = 450;
+static const int screenHeight = 800;
 
 // Required variables to manage screen transitions (fade-in, fade-out)
 static float transAlpha = 0.0f;
@@ -74,6 +78,9 @@ int main(void)
     // Setup and init first screen
     currentScreen = LOGO;
     InitLogoScreen();
+
+    // Setup random number generator
+    srand(time(NULL));
 
 #if defined(PLATFORM_WEB)
     emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
