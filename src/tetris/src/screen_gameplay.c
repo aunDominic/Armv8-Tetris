@@ -200,12 +200,9 @@ void DrawGameplayScreen(void)
     // DRAW GRID LINES
     for (int i = 0; i < COL + 1; i++) {
         DrawLineV((Vector2){(float)BLOCK_SIZE * i, BLOCK_SIZE * 4}, (Vector2){ (float)BLOCK_SIZE * i, (float)BLOCK_SIZE * (ROW + 4)}, LIGHTGRAY);
-        DrawText(TextFormat("%i", i), BLOCK_SIZE * i, -100, 10, BLACK);
     }
-    DrawText(TextFormat("Current piece:%i", piece), -10, -10, 30, BLACK);
     for (int i = 4; i < ROW + 4 + 1; i++) {
         DrawLineV((Vector2){0, (float)BLOCK_SIZE * i}, (Vector2){(float)BLOCK_SIZE * COL, (float)BLOCK_SIZE * i}, LIGHTGRAY);
-        DrawText(TextFormat("%i", i), 0, BLOCK_SIZE * i, 10, BLACK);
     }
     EndMode2D();
     EndTextureMode();
