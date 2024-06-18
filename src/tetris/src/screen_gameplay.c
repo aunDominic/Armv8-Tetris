@@ -25,10 +25,13 @@ static int finishScreen = 0;
 #define LIMEGREEN CLITERAL(Color){55, 255, 0, 255}
 #define SHADOW CLITERAL(Color){51, 51, 51, 150}
 
-// offsets for drawing the next 5
+// offsets for drawing the hold piece
+#define HOLD_PIECE_OFFSET_X ((-TETROMINO_SIZE_X - 1) * BLOCK_SIZE)
+#define HOLD_PIECE_OFFSET_Y (4 * BLOCK_SIZE)
+
+// offsets for drawing the next 5 pieces
 #define NEXT_FIVE_OFFSET_X ((COL + 1) * BLOCK_SIZE)
 #define NEXT_FIVE_OFFSET_Y (4 * BLOCK_SIZE)
-
 
 static Rectangle player1 = { 200, 200, BLOCK_SIZE, BLOCK_SIZE };
 
@@ -139,6 +142,13 @@ void DrawGameplayScreen(void)
 
     BeginMode2D(camera);
     // Draw full scene with first camera
+
+    // DRAW HOLD PIECE
+    DrawPiece(HOLD_PIECE_OFFSET_X,
+    HOLD_PIECE_OFFSET_Y,
+    hold_piece_buffer,
+    0, // default rotation upright
+    tetr_colors[hold_piece_buffer]);
 
     // DRAW NEXT 5 PIECES
     for (int i = 0; i < 5; i++) {
