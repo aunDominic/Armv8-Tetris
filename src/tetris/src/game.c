@@ -65,7 +65,7 @@ void init_board(void){
         }
     }
     srand(time(NULL));
-    piece = generate_piece();
+    piece = (int)generate_piece();
     rotation = 0;
     piece_pos.x = START_POS_X;
     piece_pos.y = START_POS_Y;
@@ -141,7 +141,7 @@ void set_piece(void){
 
     // code for generating piece and setting it in right place
     // sidenote: some of this code might be needed to implement hold_piece
-    piece = generate_piece();
+    piece = (int)generate_piece();
     piece_pos.x = START_POS_X;
     piece_pos.y = START_POS_Y;
     can_hold = true;
@@ -360,7 +360,7 @@ void hold_piece(void) {
     // handle case if hold_piece_buffer doesn't hold a piece ie at the start
     if (hold_piece_buffer == 0) {
         hold_piece_buffer = piece;
-        piece = generate_piece();
+        piece = (int)generate_piece();
         clear_draw_piece();
     } else {
         // hold_piece is not 0 so it actually has a valid piece stored

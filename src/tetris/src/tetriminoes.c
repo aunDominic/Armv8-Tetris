@@ -242,10 +242,10 @@ int wall_kicks[8][4][5][2] = {
     }
 };
 
-void printTetriminoes(int piece, int rotation){
+void printTetriminoes(TetrominoType piece, int rotation){
     for (int i = 0; i < 4; i++){
         for (int j = 0; j < 4; j++){
-            printf("%d", tetriminoes[piece][rotation][i][j]);
+            printf("%d", tetriminoes[(size_t) piece][rotation][i][j]);
         }
         printf("\n");
     }
