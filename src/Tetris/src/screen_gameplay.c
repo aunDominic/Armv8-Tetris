@@ -41,6 +41,22 @@ static int finishScreen = 0;
 #define SHADOW CLITERAL(Color){51, 51, 51, 150}
 static Rectangle player1 = { 200, 200, BLOCK_SIZE, BLOCK_SIZE };
 
+// DEFINITIONS for DAS MOVEMENT
+// Constants for ARR and DAS
+// Adjust ARR, DAS, cancelDASOnDirectionChange as you see fit
+#define ARR 4  // Automatic Repeat Rate in frames
+#define DAS 9 // Delayed Auto Shift in frames
+
+// Boolean to control whether DAS should be canceled when changing directions
+static bool cancelDASOnDirectionChange = false;
+
+// Variables to keep track of the state
+static int leftKeyFrames = 0;
+static int rightKeyFrames = 0;
+static bool leftKeyHeld = false;
+static bool rightKeyHeld = false;
+static bool dasActive = false;
+
 Color tetr_colors[8] = {
     BLACK,
     YELLOW,
@@ -52,6 +68,13 @@ Color tetr_colors[8] = {
     PURPLE,
 };
 
+//----------------------------------------------------------------------------------
+// Gameplay Movement Handling Function Defintions
+//----------------------------------------------------------------------------------
+
+// This will handle keyboard inputs and call the appropiate board functions
+// ie will handle rotation, move piece horizontally, hard drop, soft drop etc
+void HandleInput(int framesCounter);
 
 //----------------------------------------------------------------------------------
 // Gameplay Screen Functions Definition
@@ -77,12 +100,8 @@ void UpdateGameplayScreen(void)
     else if (IsKeyDown(KEY_A)) player1.x -= 3.0f;
     if (framesCounter % GRAVITY_TIME == 0) gravity();
 
-    if (IsKeyPressed(KEY_LEFT)) move_piece_left();
-    if (IsKeyPressed(KEY_RIGHT)) move_piece_right();
-    if (IsKeyPressed(KEY_UP)) rotate_piece_clockwise();
-    if (IsKeyPressed(KEY_DOWN)) rotate_piece_counter_clockwise();
-    if (IsKeyPressed(KEY_SPACE)) hard_drop();
-    if (IsKeyPressed(KEY_R)) init_board();
+
+    HandleInput(framesCounter);
     framesCounter++;
 
     set_shadow();
@@ -124,8 +143,8 @@ void DrawGameplayScreen(void)
         // Draw full scene with first camera
 
         // DRAW BLOCKS
-        for (int i = 0; i < BOARD_HEIGHT + 4; i++) {
-            for (int j = 0; j < BOARD_WIDTH; j++) { // X coordinates, col number??
+        for (int i = 0; i < ROW + 4; i++) {
+            for (int j = 0; j < COL; j++) { // X coordinates, col number??
                 if (board[i][j] == FLOATING)
                     DrawRectangle(BLOCK_SIZE * j, BLOCK_SIZE * i, BLOCK_SIZE, BLOCK_SIZE, tetr_colors[piece]);
                 else
@@ -143,13 +162,13 @@ void DrawGameplayScreen(void)
         }
 
         // DRAW GRID LINES
-        for (int i = 0; i < BOARD_WIDTH + 1; i++) {
-            DrawLineV((Vector2){(float)BLOCK_SIZE * i, BLOCK_SIZE * 4}, (Vector2){ (float)BLOCK_SIZE * i, (float)BLOCK_SIZE * (BOARD_HEIGHT + 4)}, LIGHTGRAY);
+        for (int i = 0; i < COL + 1; i++) {
+            DrawLineV((Vector2){(float)BLOCK_SIZE * i, BLOCK_SIZE * 4}, (Vector2){ (float)BLOCK_SIZE * i, (float)BLOCK_SIZE * (ROW + 4)}, LIGHTGRAY);
             DrawText(TextFormat("%i", i), BLOCK_SIZE * i, -100, 10, BLACK);
         }
         DrawText(TextFormat("Current piece:%i", piece), -10, -10, 30, BLACK);
-        for (int i = 4; i < BOARD_HEIGHT + 4 + 1; i++) {
-            DrawLineV((Vector2){0, (float)BLOCK_SIZE * i}, (Vector2){(float)BLOCK_SIZE * BOARD_WIDTH, (float)BLOCK_SIZE * i}, LIGHTGRAY);
+        for (int i = 4; i < ROW + 4 + 1; i++) {
+            DrawLineV((Vector2){0, (float)BLOCK_SIZE * i}, (Vector2){(float)BLOCK_SIZE * COL, (float)BLOCK_SIZE * i}, LIGHTGRAY);
             DrawText(TextFormat("%i", i), 0, BLOCK_SIZE * i, 10, BLACK);
         }
         EndMode2D();
@@ -177,4 +196,108 @@ void UnloadGameplayScreen(void)
 int FinishGameplayScreen(void)
 {
     return finishScreen;
+}
+
+// only soft_drop needs the framesCounter
+// void HandleInput(int framesCounter) {
+//     if (IsKeyPressed(KEY_LEFT)) move_piece_left();
+//     if (IsKeyPressed(KEY_RIGHT)) move_piece_right();
+//     if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_X)) rotate_piece_clockwise();
+//     if (IsKeyPressed(KEY_Z)) rotate_piece_counter_clockwise();
+//     if (IsKeyPressed(KEY_DOWN)) {
+//         soft_drop(framesCounter);
+//     } else if (IsKeyPressed(KEY_SPACE)) {
+//         hard_drop();
+//     }
+//
+//     if (IsKeyPressed(KEY_C)) {
+//         hold_piece();
+//     }
+//
+//     if (IsKeyPressed(KEY_R)) init_board();
+// }
+
+void HandleInput(int framesCounter) {
+    // Handle left movement
+    if (IsKeyPressed(KEY_LEFT)) {
+        move_piece_left();
+        leftKeyFrames = 0;
+        leftKeyHeld = true;
+        rightKeyHeld = false;
+        dasActive = false;
+    } else if (IsKeyDown(KEY_LEFT)) {
+        if (leftKeyHeld) {
+            leftKeyFrames++;
+            if (leftKeyFrames >= DAS) {
+                dasActive = true;
+                if (ARR == 0) {
+                    for (int i = 0; i < 10; i++) {
+                        move_piece_left();
+                    }
+                } else if ((leftKeyFrames - DAS) % ARR == 0) {
+                    move_piece_left();
+                }
+            }
+        }
+    } else {
+        leftKeyHeld = false;
+        leftKeyFrames = 0;
+    }
+
+    // Handle right movement
+    if (IsKeyPressed(KEY_RIGHT)) {
+        // handle special case so it zooms over to the right or left similar to Tetrio
+        move_piece_right();
+        rightKeyFrames = 0;
+        rightKeyHeld = true;
+        leftKeyHeld = false;
+        dasActive = false;
+    } else if (IsKeyDown(KEY_RIGHT)) {
+        if (rightKeyHeld) {
+            rightKeyFrames++;
+            if (rightKeyFrames >= DAS) {
+                dasActive = true;
+                // handle special case so it zooms over to the right or left similar to Tetrio
+                if (ARR == 0) {
+                    for (int i = 0; i < COL; i++) {
+                        move_piece_right();
+                    }
+                } else if ((rightKeyFrames - DAS) % ARR == 0) {
+                    move_piece_right();
+                }
+            }
+        }
+    } else {
+        rightKeyHeld = false;
+        rightKeyFrames = 0;
+    }
+
+    // Cancel DAS if changing directions
+    if (cancelDASOnDirectionChange) {
+        if (leftKeyHeld && IsKeyPressed(KEY_RIGHT)) {
+            leftKeyHeld = false;
+            leftKeyFrames = 0;
+        }
+        if (rightKeyHeld && IsKeyPressed(KEY_LEFT)) {
+            rightKeyHeld = false;
+            rightKeyFrames = 0;
+        }
+    }
+
+    // Handle other inputs
+    if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_X)) rotate_piece_clockwise();
+    if (IsKeyPressed(KEY_Z)) rotate_piece_counter_clockwise();
+    if (IsKeyDown(KEY_DOWN)) {
+        soft_drop(framesCounter);
+    } else if (IsKeyPressed(KEY_SPACE)) {
+        hard_drop();
+    }
+
+    if (IsKeyPressed(KEY_C)) {
+        hold_piece();
+    }
+
+    if (IsKeyPressed(KEY_R)) {
+        init_board();
+    }
 }
