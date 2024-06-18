@@ -1,33 +1,25 @@
 /*******************************************************************************************
 *
-*   raylib game template
+*   Imperial Computing - Year One Project - Extension: Tetris
 *
-*   <Game title>
-*   <Game description>
-*
-*   This game has been created using raylib (www.raylib.com)
-*   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
-*
-*   Copyright (c) 2021 Ramon Santamaria (@raysan5)
+*   Players complete lines by moving differently shaped pieces (tetrominoes), which
+*   descend onto the playing field. The completed lines disappear and grant the player
+*   points, and the player can proceed to fill the vacated spaces. The game ends can
+*   when the uncleared lines reach the top of the playing field. The longer the player
+*   delay this outcome, the higher their score will be.
 *
 ********************************************************************************************/
-
-#include <stddef.h>
 #include <stdlib.h>
 #include <time.h>
 
 #include "raylib.h"
 #include "screens.h"    // NOTE: Declares global (extern) variables and screens functions
 
-#if defined(PLATFORM_WEB)
-    #include <emscripten/emscripten.h>
-#endif
-
 //----------------------------------------------------------------------------------
 // Shared Variables Definition (global)
 // NOTE: Those variables are shared between modules through screens.h
 //----------------------------------------------------------------------------------
-GameScreen currentScreen = GAMEPLAY;
+GameScreen currentScreen = LOGO;
 Font font = { 0 };
 Music music = { 0 };
 Sound fxCoin = { 0 };
@@ -35,8 +27,8 @@ Sound fxCoin = { 0 };
 //----------------------------------------------------------------------------------
 // Local Variables Definition (local to this module)
 //----------------------------------------------------------------------------------
-static const int screenWidth = 800;
-static const int screenHeight = 800;
+static const int screenWidth = 600; // TODO: was 800, adjust to final on release
+static const int screenHeight = 800; // TODO: was 450, adjust to final on release
 
 // Required variables to manage screen transitions (fade-in, fade-out)
 static float transAlpha = 0.0f;
@@ -63,7 +55,7 @@ int main(void)
 {
     // Initialization
     //---------------------------------------------------------
-    InitWindow(screenWidth, screenHeight, "raylib game template");
+    InitWindow(screenWidth, screenHeight, "Tetris - Remake");
 
     InitAudioDevice();      // Initialize audio device
 
@@ -72,19 +64,16 @@ int main(void)
     music = LoadMusicStream("resources/ambient.ogg");
     fxCoin = LoadSound("resources/coin.wav");
 
-    SetMusicVolume(music, 0.0f);
+    SetMusicVolume(music, 0.0f); // TODO: set back to `1.0f` when correct music loaded
     PlayMusicStream(music);
 
     // Setup and init first screen
     currentScreen = LOGO;
     InitLogoScreen();
 
-    // Setup random number generator
+    // Setup random number generator seed
     srand(time(NULL));
 
-#if defined(PLATFORM_WEB)
-    emscripten_set_main_loop(UpdateDrawFrame, 60, 1);
-#else
     SetTargetFPS(60);       // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
@@ -93,7 +82,6 @@ int main(void)
     {
         UpdateDrawFrame();
     }
-#endif
 
     // De-Initialization
     //--------------------------------------------------------------------------------------

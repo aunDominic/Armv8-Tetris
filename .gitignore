@@ -7,7 +7,6 @@
 *.pdf
 
 #ignore junk files from latex output
-*.out
 *.log
 *.aux
 *.dvi
@@ -15,20 +14,50 @@
 
 #ignore junk files from compiling C code
 *.o
+*.ko
+*.obj
+*.elf
 *.d
+*.ilk
+*.map
+*.exp
+*.gch
+*.pch
 
 # removed these so you can have subfolders with these names
 # though there's a workaround
 #emulate
 #assemble
 
-build/
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
 armv8_testsuite/
 #ignore junk files from compiling Haskell code
 *.hi
 
 #ignore junk files from compiling Java code
 *.class
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
 
 #ignore other junk files
 *.backup
@@ -38,10 +67,26 @@ armv8_testsuite/
 *.vrb
 *.nav
 *.toc
+*.DS_Store
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Android
+*apk*
+android.*
+
+# Visual Studio files
+[Dd]ebug/
+[Dd]ebug.DLL/
+[R]elease/
+[Rr]elease.DLL/
+*.user
+.vs
 
 # Ignore all .idea folder contents
 .idea/
-
 
 # But keep specific useful files
 !.idea/codeStyles/
@@ -52,7 +97,10 @@ armv8_testsuite/
 .idea/.name
 .idea/editor.xml
 
+# Clangd LSP
+.cache
+compile_commands.json
+
 # Ignore build artifacts
 cmake-build-debug/
-
-
+[Bb]uild/

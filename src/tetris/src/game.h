@@ -1,18 +1,26 @@
+#ifndef GAME_H
+#define GAME_H
+
 #define COL 10
 #define ROW 20
 #define MAX_PIECE_SIZE 4
+
+#include "types.h"
 
 typedef struct{
     int x;
     int y;
 } pair;
 
-
 extern int board[ROW + 4][COL];
 
-extern int piece;
+extern TetrominoType piece;
 
-extern int hold_piece_buffer;
+extern TetrominoType hold_piece_buffer;
+
+extern bool can_hold;
+
+extern TetrominoType next_five_pieces[5];
 
 extern pair piece_pos;
 
@@ -20,7 +28,11 @@ extern pair shadow_pos;
 
 extern int rotation;
 
-void gravity(void);
+extern u32_t level;
+extern u64_t score;
+extern u32_t lines_cleared;
+
+void handle_gravity(int frames_counter);
 
 void clear_lines(int l, int u);
 
@@ -45,4 +57,4 @@ void hold_piece(void);
 
 void set_shadow(void);
 
-
+#endif //GAME_H

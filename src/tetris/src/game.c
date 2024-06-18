@@ -1,18 +1,19 @@
 #include <stdbool.h>
-#include <assert.h>
-#include <stdio.h>
-#include "tetriminoes.h"
-#include "game.h"
-#include <time.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <assert.h>
+#include <time.h>
+
+#include "tetrominoes.h"
 #include "random_piece.h"
+#include "game.h"
 
 /* Board Configuration
                       xcord = WIDTH
     x x x x x x x x x x  - y = 0 - Piece spawn here
     .
     .
-    .   
+    .
     x x x x x x x x x x  - y = 4 - Board starts here
     .
     .
@@ -23,7 +24,7 @@
 
 #define START_POS_X (COL / 2)
 #define START_POS_Y 0
-
+#define LEVEL_UP_THRESHOLD 10
 
 /*////////////////////////
     FUNCTION DECLRATIONS
@@ -33,29 +34,38 @@ void set_shadow(); // Sets the shadow position according to the piece position
 void init_board(); // Initialises board
 static bool is_line_filled(int line[]); // Checks if the line is filled duh
 static void clear_line(int line[]); // Clears the line (not the same as making it empty)
-static void shift_lines_down(int l, int u); // Called after clear line, shifts lines between [l,u] inclusive down 
-void clear_lines(int l, int u); // Top level function called to perform necessary line clears. 
-void set_piece(); // Places the piece on the board. 
+static void shift_lines_down(int l, int u); // Called after clear line, shifts lines between [l,u] inclusive down
+void clear_lines(int l, int u); // Top level function called to perform necessary line clears.
+static void update_score(int lines);
+void set_piece(); // Places the piece on the board.
 static bool is_valid_orientation(); // Checks if the current orientation of the piece is valid (ie its position and rotation do not collide with the board)
 static void clear_draw_piece(); // Clears the current piece in hand from the board
 static void redraw_piece(); // Draws the current piece on the screen
+static TetrominoType get_next_piece(); // updates the `next_five_pieces` buffer and returns the upcoming piece
+static void gravity(void);
 /* ////////////////////// */
 
 
-// Initialises board 
+// Initialises board
 // Extra 4 units of height for pieces to spawn.
 // These 4 lines may not be have any pieces placed in them.
 int board[ROW + 4][COL] = {EMPTY}; // Initialise board to empty
-int piece = TETR_I; // Current piece in hand
-int hold_piece_buffer = 0; // set as 0 by default
+TetrominoType piece = TETR_I; // Current piece in hand
+TetrominoType hold_piece_buffer = 0; // set as 0 by default
+TetrominoType next_five_pieces[5] = { 0 }; // initialized to 0
 int rotation = 0; // Current rotation.
 // To get the current tetrimino
-// We use tetriminoes[piece][rotation] -> a 4x4 array containing the tetrimino
+// We use tetrominoes[piece][rotation] -> a 4x4 array containing the tetrimino
 pair piece_pos = {.x = START_POS_X, .y = START_POS_Y}; // coordinate of the left corner of the piece
-pair shadow_pos = {.x = START_POS_X, .y = START_POS_Y}; // coordinate of left corner of the piece's shadow 
+pair shadow_pos = {.x = START_POS_X, .y = START_POS_Y}; // coordinate of left corner of the piece's shadow
 
-static bool can_hold = true; // this is used so people can't infinitely spam the hold button to get extra time
+// this is used so people can't infinitely spam the hold button to get extra time;
 // can_hold resets after every successful piece placement
+bool can_hold = true;
+
+u32_t level = 1; // player level
+u64_t score = 0; // layer score
+u32_t lines_cleared = 0; // number of lines cleared
 
 void init_board(void){
     for (int i = 0; i < ROW + 4; i++){
@@ -64,7 +74,7 @@ void init_board(void){
         }
     }
     srand(time(NULL));
-    piece = generate_piece();
+    piece = get_next_piece();
     rotation = 0;
     piece_pos.x = START_POS_X;
     piece_pos.y = START_POS_Y;
@@ -80,8 +90,17 @@ static void clear_line(int line[]){
     for (int i = 0; i < COL; i++) line[i] = CLEAR;
 }
 
+static void update_score(int lines) {
+    switch (lines) {
+        case 1: score += 100 * level; break;
+        case 2: score += 300 * level; break;
+        case 3: score += 500 * level; break;
+        default: score += 800 * level; // tetris
+    }
+}
+
 static void shift_lines_down(int l, int u){
-   // Naive Gravity. 
+   // Naive Gravity.
    // Lines are shifted down by exactly the number of cleared lines below them
    // The piece is placed between the y coords [l, u], inclusive
    // A higher y value -> a lower position on the board. The y axis points downwards, similar to how 2D Arrays are organised
@@ -90,15 +109,18 @@ static void shift_lines_down(int l, int u){
     for (int i = u; i >= l; i--){
         if (board[i][0] == CLEAR) {
             cnt_clear_lines++;
-        } 
+        }
         else if (cnt_clear_lines > 0){
             for (int j = 0; j < COL; j++){
                 board[i+cnt_clear_lines][j] = board[i][j];
-                board[i][j] = EMPTY; 
+                board[i][j] = EMPTY;
             }
             printf("debug: Shifting lines down..\n");
         }
     }
+    if (cnt_clear_lines > 0)
+        update_score(cnt_clear_lines); // update score
+    lines_cleared += cnt_clear_lines; // update lines cleared
 }
 
 // Clears the lines between the y coordinates (l, u)
@@ -117,6 +139,9 @@ void clear_lines(int l, int u){
         }
     }
     shift_lines_down(l, u);
+
+    // update the level according to lines cleared
+    level = lines_cleared / LEVEL_UP_THRESHOLD + 1;
 }
 // void update_piece_shadow(void){
 //     for (int i = 0 < MAX_PIECE_SIZE; i++){
@@ -129,8 +154,8 @@ void set_piece(void){
     printf("debug: Attempting to set piece.\n");
     for (int i = 0; i < MAX_PIECE_SIZE; i++){ // Fors every row
         for (int j = 0; j < MAX_PIECE_SIZE; j++){ // For every column
-            if (tetriminoes[piece][rotation][i][j] == piece){
-                board[piece_pos.y + i][j + piece_pos.x] = piece; 
+            if (tetrominoes[piece][rotation][i][j] == piece){
+                board[piece_pos.y + i][j + piece_pos.x] = piece;
             }
         }
     }
@@ -140,19 +165,19 @@ void set_piece(void){
 
     // code for generating piece and setting it in right place
     // sidenote: some of this code might be needed to implement hold_piece
-    piece = generate_piece();
+    piece = get_next_piece();
     piece_pos.x = START_POS_X;
     piece_pos.y = START_POS_Y;
     can_hold = true;
 
     printBoard();
-    printTetriminoes(piece, rotation);
+    printTetrominoes(piece, rotation);
     redraw_piece();
 }
 static void clear_draw_piece(void){
     for (int i = 0; i < MAX_PIECE_SIZE; i++){ // Piece Height
         for (int j = 0; j < MAX_PIECE_SIZE; j++){ // Piece Width
-            if (tetriminoes[piece][rotation][i][j] == piece){
+            if (tetrominoes[piece][rotation][i][j] == piece){
                 board[piece_pos.y + i][j + piece_pos.x] = EMPTY;
             }
         }
@@ -161,7 +186,7 @@ static void clear_draw_piece(void){
 static void redraw_piece(void){
     for (int i = 0; i < MAX_PIECE_SIZE; i++){ // Piece Height
         for (int j = 0; j < MAX_PIECE_SIZE; j++){ // Piece Width
-            if (tetriminoes[piece][rotation][i][j] == piece){
+            if (tetrominoes[piece][rotation][i][j] == piece){
                 board[piece_pos.y + i][j + piece_pos.x] = FLOATING;
             }
         }
@@ -170,11 +195,11 @@ static void redraw_piece(void){
 static bool is_valid_orientation(void){
     for (int i = 0; i < MAX_PIECE_SIZE; i++){ // Piece Height
         for (int j = 0; j < MAX_PIECE_SIZE; j++){ // Piece Width
-            if (tetriminoes[piece][rotation][i][j] == piece &&
+            if (tetrominoes[piece][rotation][i][j] == piece &&
                 (
-                    piece_pos.x + j < 0 
+                    piece_pos.x + j < 0
                 ||  piece_pos.x + j >= COL
-                ||  piece_pos.y + i < 0 
+                ||  piece_pos.y + i < 0
                 ||  piece_pos.y + i >= ROW + 4
                 ||  (board[piece_pos.y + i][piece_pos.x + j] != EMPTY) &&
                     board[piece_pos.y + i][piece_pos.x + j] != FLOATING) ){
@@ -309,10 +334,10 @@ void set_shadow(void){
     for (int y = piece_pos.y; y < ROW + 4; y++){
         for (int i = 0; i < MAX_PIECE_SIZE; i++){ // For every row
             for (int j = 0; j < MAX_PIECE_SIZE; j++){ // For every column
-                if (tetriminoes[piece][rotation][i][j] == piece && 
+                if (tetrominoes[piece][rotation][i][j] == piece &&
                 board[y + i][j + piece_pos.x] != EMPTY &&
                 board[y + i][j + piece_pos.x] != FLOATING ||
-                (tetriminoes[piece][rotation][i][j] == piece && y + i >= ROW + 4)){
+                (tetrominoes[piece][rotation][i][j] == piece && y + i >= ROW + 4)){
                     shadow_pos.y = y-1;
                     return;
                 }
@@ -320,18 +345,19 @@ void set_shadow(void){
         }
     }
 }
-void gravity(void){
+
+static void gravity(void){
     // PRE: The piece currently does not collide with any placed block
-    // 
-    // If the piece moving the piece down collides with any block, 
+    //
+    // If the piece moving the piece down collides with any block,
     // piece_pos represents the coordinates of the left corner of the piece
     // printf("Attempting gravity\n");
     for (int i = 0; i < MAX_PIECE_SIZE; i++){ // For every row
         for (int j = 0; j < MAX_PIECE_SIZE; j++){ // For every column
-            if (tetriminoes[piece][rotation][i][j] == piece && 
+            if (tetrominoes[piece][rotation][i][j] == piece &&
                 board[piece_pos.y + i + 1][j + piece_pos.x] != EMPTY &&
-                board[piece_pos.y + i + 1][j + piece_pos.x] != FLOATING || 
-                (tetriminoes[piece][rotation][i][j] == piece && piece_pos.y + i + 1 >= ROW + 4)
+                board[piece_pos.y + i + 1][j + piece_pos.x] != FLOATING ||
+                (tetrominoes[piece][rotation][i][j] == piece && piece_pos.y + i + 1 >= ROW + 4)
                ){
                 set_piece();
 
@@ -358,9 +384,9 @@ void hold_piece(void) {
 
     // handle case if hold_piece_buffer doesn't hold a piece ie at the start
     if (hold_piece_buffer == 0) {
-        hold_piece_buffer = piece;
-        piece = generate_piece();
         clear_draw_piece();
+        hold_piece_buffer = piece;
+        piece = get_next_piece();
     } else {
         // hold_piece is not 0 so it actually has a valid piece stored
         clear_draw_piece();
@@ -379,7 +405,6 @@ bool block_is_filled(int i, int j){
     return board[i][j] != EMPTY;
 }
 
-
 static void printBoard(){
     printf("New Board State, Current Piece: %d\n", piece);
     for (int i = 3; i < ROW + 4; i++){
@@ -390,13 +415,45 @@ static void printBoard(){
     }
 }
 
+static TetrominoType get_next_piece() {
+    // get the next piece
+    const TetrominoType piece = generate_piece();
 
-// int main(){
-//     int i =0;
-//     while (i < 50){
-//         gravity();
-//         // printBoard();
-//         clear_lines(0, BOARD_HEIGHT + 3);
-//         i ++;
-//     }
-// }
+    // grab the next five pieces and decode
+    const FivePiecesPreview preview = { .integerEncoding = viewNextFive() };
+
+    // update the buffer appropriately
+    next_five_pieces[0] = preview.pieces.first;
+    next_five_pieces[1] = preview.pieces.second;
+    next_five_pieces[2] = preview.pieces.third;
+    next_five_pieces[3] = preview.pieces.fourth;
+    next_five_pieces[4] = preview.pieces.fifth;
+
+    // return the next piece
+    return piece;
+}
+
+void handle_gravity(int frames_counter) {
+    // pick correct gravity time, according to the current level
+    u32_t gravity_time;
+    switch (level) {
+        case 1: gravity_time = 20; break;
+        case 2: gravity_time = 18; break;
+        case 3: gravity_time = 16; break;
+        case 4: gravity_time = 14; break;
+        case 5: gravity_time = 12; break;
+        case 6: gravity_time = 11; break;
+        case 7: gravity_time = 10; break;
+        case 8: gravity_time = 9; break;
+        case 9: gravity_time = 8; break;
+        case 10: gravity_time = 7; break;
+        case 11: gravity_time = 6; break;
+        case 12: gravity_time = 5; break;
+        case 13: gravity_time = 4; break;
+        case 14: gravity_time = 3; break;
+        default: gravity_time = 2;
+    }
+
+    if (frames_counter % gravity_time == 0)
+        gravity();
+}

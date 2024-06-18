@@ -1,0 +1,18 @@
+# Android
+*apk*
+android.*
+
+# Visual Studio files
+[Dd]ebug/
+[Dd]ebug.DLL/
+[R]elease/
+[Rr]elease.DLL/
+*.user
+.vs
+
+# Ignore all .idea folder contents
+.idea/
+
+# Clangd LSP
+.cache
+compile_commands.json
