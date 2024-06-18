@@ -24,7 +24,7 @@
 
 #define START_POS_X (COL / 2)
 #define START_POS_Y 0
-
+#define LEVEL_UP_THRESHOLD 10
 
 /*////////////////////////
     FUNCTION DECLRATIONS
@@ -41,6 +41,7 @@ static bool is_valid_orientation(); // Checks if the current orientation of the 
 static void clear_draw_piece(); // Clears the current piece in hand from the board
 static void redraw_piece(); // Draws the current piece on the screen
 static TetrominoType get_next_piece(); // updates the `next_five_pieces` buffer and returns the upcoming piece
+static void gravity(void);
 /* ////////////////////// */
 
 
@@ -57,8 +58,13 @@ int rotation = 0; // Current rotation.
 pair piece_pos = {.x = START_POS_X, .y = START_POS_Y}; // coordinate of the left corner of the piece
 pair shadow_pos = {.x = START_POS_X, .y = START_POS_Y}; // coordinate of left corner of the piece's shadow
 
-bool can_hold = true; // this is used so people can't infinitely spam the hold button to get extra time
+// this is used so people can't infinitely spam the hold button to get extra time;
 // can_hold resets after every successful piece placement
+bool can_hold = true;
+
+u32_t level = 1; // player level
+u64_t score = 0; // layer score
+u32_t lines_cleared = 0; // number of lines cleared
 
 void init_board(void){
     for (int i = 0; i < ROW + 4; i++){
@@ -102,6 +108,7 @@ static void shift_lines_down(int l, int u){
             printf("debug: Shifting lines down..\n");
         }
     }
+    lines_cleared += cnt_clear_lines; // update lines cleared
 }
 
 // Clears the lines between the y coordinates (l, u)
@@ -120,6 +127,10 @@ void clear_lines(int l, int u){
         }
     }
     shift_lines_down(l, u);
+
+    // update the level according to lines cleared
+    level = lines_cleared / LEVEL_UP_THRESHOLD + 1;
+
 }
 // void update_piece_shadow(void){
 //     for (int i = 0 < MAX_PIECE_SIZE; i++){
@@ -323,7 +334,8 @@ void set_shadow(void){
         }
     }
 }
-void gravity(void){
+
+static void gravity(void){
     // PRE: The piece currently does not collide with any placed block
     //
     // If the piece moving the piece down collides with any block,
@@ -408,4 +420,30 @@ static TetrominoType get_next_piece() {
 
     // return the next piece
     return piece;
+}
+
+void handle_gravity(int frames_counter) {
+    // pick correct gravity time, according to the current level
+    u32_t gravity_time;
+    switch (level) {
+        case 1: gravity_time = 20; break;
+        case 2: gravity_time = 18; break;
+        case 3: gravity_time = 16; break;
+        case 4: gravity_time = 14; break;
+        case 5: gravity_time = 12; break;
+        case 6: gravity_time = 11; break;
+        case 7: gravity_time = 10; break;
+        case 8: gravity_time = 9; break;
+        case 9: gravity_time = 8; break;
+        case 10: gravity_time = 7; break;
+        case 11: gravity_time = 6; break;
+        case 12: gravity_time = 5; break;
+        case 13: gravity_time = 4; break;
+        case 14: gravity_time = 3; break;
+        default: gravity_time = 2;
+    }
+
+    if (frames_counter % gravity_time == 0) {
+        gravity();
+    };
 }

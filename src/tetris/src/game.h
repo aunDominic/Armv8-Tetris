@@ -5,6 +5,8 @@
 #define ROW 20
 #define MAX_PIECE_SIZE 4
 
+#include "types.h"
+
 typedef struct{
     int x;
     int y;
@@ -26,7 +28,11 @@ extern pair shadow_pos;
 
 extern int rotation;
 
-void gravity(void);
+extern u32_t level;
+extern u64_t score;
+extern u32_t lines_cleared;
+
+void handle_gravity(int frames_counter);
 
 void clear_lines(int l, int u);
 

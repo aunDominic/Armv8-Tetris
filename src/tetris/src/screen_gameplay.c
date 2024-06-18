@@ -19,7 +19,6 @@ static int framesCounter = 0;
 static int finishScreen = 0;
 
 #define BLOCK_SIZE 20
-#define GRAVITY_TIME 20
 #define LIGHTBLUE CLITERAL(Color){0, 229, 255, 255}
 #define JBLUE CLITERAL(Color){0, 38, 255, 255}
 #define LIMEGREEN CLITERAL(Color){55, 255, 0, 255}
@@ -103,8 +102,8 @@ void UpdateGameplayScreen(void)
     else if (IsKeyDown(KEY_W)) player1.y -= 3.0f;
     if (IsKeyDown(KEY_D)) player1.x += 3.0f;
     else if (IsKeyDown(KEY_A)) player1.x -= 3.0f;
-    if (framesCounter % GRAVITY_TIME == 0) gravity();
 
+    handle_gravity(framesCounter); // handle gravity
 
     HandleInput(framesCounter);
     framesCounter++;
@@ -143,6 +142,10 @@ void DrawGameplayScreen(void)
     BeginMode2D(camera);
     // Draw full scene with first camera
 
+    // Draw lines TEMP
+    DrawText(TextFormat("LINES CLEARED: %u", lines_cleared), 0, -60, 20, BLACK);
+    DrawText(TextFormat("LEVEL: %u", level), 0, -30, 20, BLACK);
+
     // DRAW HOLD PIECE
     if (!can_hold) {
         // if can't hold, draw hold piece with opacity = 33.33%
@@ -164,7 +167,6 @@ void DrawGameplayScreen(void)
             0, // default rotation upright
             tetr_colors[hold_piece_buffer]);
     }
-
 
     // DRAW NEXT 5 PIECES
     for (int i = 0; i < 5; i++) {
