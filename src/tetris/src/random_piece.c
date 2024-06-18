@@ -7,6 +7,9 @@
 
 // Generates a new piece
 TetrominoType generate_piece() {
+    // TODO: remove this later, this is for debugging
+    printNextFive(viewNextFive());
+
     return drawFromBag(); // choose between random_gen() vs drawFromBag();
 }
 

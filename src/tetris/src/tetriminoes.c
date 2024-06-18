@@ -242,6 +242,19 @@ int wall_kicks[8][4][5][2] = {
     }
 };
 
+void printTetrominoType(const TetrominoType type) {
+    switch (type) {
+        case TETROMINO_O: printf("O"); break;
+        case TETROMINO_I: printf("I"); break;
+        case TETROMINO_S: printf("S"); break;
+        case TETROMINO_Z: printf("Z"); break;
+        case TETROMINO_L: printf("L"); break;
+        case TETROMINO_J: printf("J"); break;
+        case TETROMINO_T: printf("T"); break;
+        default: printf("TETROMINO_EMPTY");
+    }
+}
+
 void printTetriminoes(TetrominoType piece, int rotation){
     for (int i = 0; i < 4; i++){
         for (int j = 0; j < 4; j++){

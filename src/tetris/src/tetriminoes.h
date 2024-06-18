@@ -32,6 +32,8 @@ typedef enum {
 extern int tetriminoes[8][4][4][4];
 extern int wall_kicks[8][4][5][2];
 
+void printTetrominoType(TetrominoType type);
+
 void printTetriminoes(TetrominoType piece, int rotation);
 
 #endif //TETRIMINOES_H

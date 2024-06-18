@@ -27,12 +27,12 @@ typedef union {
 /// Returns the next five pieces in the bag,
 /// encoded as a 16-bit unsigned integer.
 ///
-/// The bits mean the following following:
-/// - 0-2: the first tetrimino type, in the range of 0..7
-/// - 3-5: the second tetrimino type, in the range of 0..7
-/// - 6-8: the third tetrimino type, in the range of 0..7
-/// - 9-11: the fourth tetrimino type, in the range of 0..7
-/// - 12-14: the fifth tetrimino type, in the range of 0..7
+/// The bits mean the following:
+/// - 0-2: the first tetromino type, in the range of 0..7
+/// - 3-5: the second tetromino type, in the range of 0..7
+/// - 6-8: the third tetromino type, in the range of 0..7
+/// - 9-11: the fourth tetromino type, in the range of 0..7
+/// - 12-14: the fifth tetromino type, in the range of 0..7
 /// - 15: unused
 ///
 /// A piece type of 0 is an empty piece, while 1..7 are the usual O,I,S,Z,L,J,T
@@ -41,9 +41,12 @@ typedef union {
 /// with the returned integer, and then accessing the `.pieces` property
 u16_t viewNextFive();
 
+/// Will print the next five pieces to output, encoded as integer
+void printNextFive(u16_t nextFive);
+
 /// Function to draw the next item from the bag,
 /// which returns an integer in the range of 0..7
-/// representing the tetrimino type
+/// representing the tetromino type
 TetrominoType drawFromBag();
 
 #endif //SEVEN_BAG_H
