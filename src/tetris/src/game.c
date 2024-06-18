@@ -168,6 +168,7 @@ void set_piece(void){
     piece = get_next_piece();
     piece_pos.x = START_POS_X;
     piece_pos.y = START_POS_Y;
+    rotation = 0;
     can_hold = true;
 
     printBoard();
