@@ -145,6 +145,7 @@ void DrawGameplayScreen(void)
     // Draw lines TEMP
     DrawText(TextFormat("LINES CLEARED: %u", lines_cleared), 0, -60, 20, BLACK);
     DrawText(TextFormat("LEVEL: %u", level), 0, -30, 20, BLACK);
+    DrawText(TextFormat("SCORE: %u", score), 0, -90, 20, BLACK);
 
     // DRAW HOLD PIECE
     if (!can_hold) {

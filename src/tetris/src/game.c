@@ -36,6 +36,7 @@ static bool is_line_filled(int line[]); // Checks if the line is filled duh
 static void clear_line(int line[]); // Clears the line (not the same as making it empty)
 static void shift_lines_down(int l, int u); // Called after clear line, shifts lines between [l,u] inclusive down
 void clear_lines(int l, int u); // Top level function called to perform necessary line clears.
+static void update_score(int lines);
 void set_piece(); // Places the piece on the board.
 static bool is_valid_orientation(); // Checks if the current orientation of the piece is valid (ie its position and rotation do not collide with the board)
 static void clear_draw_piece(); // Clears the current piece in hand from the board
@@ -89,6 +90,15 @@ static void clear_line(int line[]){
     for (int i = 0; i < COL; i++) line[i] = CLEAR;
 }
 
+static void update_score(int lines) {
+    switch (lines) {
+        case 1: score += 100 * level; break;
+        case 2: score += 300 * level; break;
+        case 3: score += 500 * level; break;
+        default: score += 800 * level; // tetris
+    }
+}
+
 static void shift_lines_down(int l, int u){
    // Naive Gravity.
    // Lines are shifted down by exactly the number of cleared lines below them
@@ -108,6 +118,8 @@ static void shift_lines_down(int l, int u){
             printf("debug: Shifting lines down..\n");
         }
     }
+    if (cnt_clear_lines > 0)
+        update_score(cnt_clear_lines); // update score
     lines_cleared += cnt_clear_lines; // update lines cleared
 }
 
@@ -130,7 +142,6 @@ void clear_lines(int l, int u){
 
     // update the level according to lines cleared
     level = lines_cleared / LEVEL_UP_THRESHOLD + 1;
-
 }
 // void update_piece_shadow(void){
 //     for (int i = 0 < MAX_PIECE_SIZE; i++){
@@ -443,7 +454,6 @@ void handle_gravity(int frames_counter) {
         default: gravity_time = 2;
     }
 
-    if (frames_counter % gravity_time == 0) {
+    if (frames_counter % gravity_time == 0)
         gravity();
-    };
 }
