@@ -67,9 +67,9 @@ Color tetr_colors[8] = {
 // ie will handle rotation, move piece horizontally, hard drop, soft drop etc
 void HandleInput(int framesCounter);
 
-/// This will draw the provided piece to whatever thing is currently enabled,
-/// with the top-right corner of the piece being specified with the offsets
-void DrawPiece(int posX, int posY, TetrominoType piece, TetrominoRotation rotation, Color color);
+/// This will draw the provided tetrominoType to whatever thing is currently enabled,
+/// with the top-right corner of the tetrominoType being specified with the offsets
+static void DrawPiece(int posX, int posY, TetrominoType tetrominoType, TetrominoRotation tetrominoRotation, int blockSize, Color color);
 
 //----------------------------------------------------------------------------------
 // Gameplay Screen Functions Definition
@@ -159,6 +159,7 @@ void DrawGameplayScreen(void)
         HOLD_PIECE_OFFSET_Y,
             hold_piece_buffer,
             0, // default rotation upright
+            BLOCK_SIZE,
             (Color){
                 .r = currentPieceColor.r,
                 .g = currentPieceColor.g,
@@ -169,6 +170,7 @@ void DrawGameplayScreen(void)
         HOLD_PIECE_OFFSET_Y,
             hold_piece_buffer,
             0, // default rotation upright
+            BLOCK_SIZE,
             tetr_colors[hold_piece_buffer]);
     }
 
@@ -178,6 +180,7 @@ void DrawGameplayScreen(void)
             NEXT_FIVE_OFFSET_Y + i * TETROMINO_SIZE_Y * BLOCK_SIZE,
             next_five_pieces[i],
             0, // default rotation upright
+            BLOCK_SIZE,
             tetr_colors[next_five_pieces[i]]);
     }
 
@@ -334,23 +337,24 @@ void HandleInput(int framesCounter) {
     }
 }
 
-void DrawPiece(
-    const int posX,
-    const int posY,
-    const TetrominoType piece,
-    const TetrominoRotation rotation,
-    const Color color)
+static void DrawPiece(
+        int posX,
+        int posY,
+        TetrominoType tetrominoType,
+        TetrominoRotation tetrominoRotation,
+        int blockSize,
+        Color color)
 {
     for (int y = 0; y < TETROMINO_SIZE_Y; y++)
         for (int x = 0; x < TETROMINO_SIZE_X; x++) {
             // don't draw empty tetromino values
-            if (tetrominoes[(int)piece][rotation][y][x] == TETROMINO_EMPTY) continue;
+            if (tetrominoes[(int)tetrominoType][tetrominoRotation][y][x] == TETROMINO_EMPTY) continue;
 
             DrawRectangle(
-                posX + x * BLOCK_SIZE,
-                posY + y * BLOCK_SIZE,
-                BLOCK_SIZE,
-                BLOCK_SIZE,
+                posX + x * blockSize,
+                posY + y * blockSize,
+                blockSize,
+                blockSize,
                 color);
         }
 }
