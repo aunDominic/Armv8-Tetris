@@ -142,10 +142,10 @@ void DrawGameplayScreen(void)
     BeginMode2D(camera);
     // Draw full scene with first camera
 
-    // Draw lines TEMP
+    // Draw stats:
+    DrawText(TextFormat("SCORE: %u", score), 0, -90, 20, BLACK);
     DrawText(TextFormat("LINES CLEARED: %u", lines_cleared), 0, -60, 20, BLACK);
     DrawText(TextFormat("LEVEL: %u", level), 0, -30, 20, BLACK);
-    DrawText(TextFormat("SCORE: %u", score), 0, -90, 20, BLACK);
 
     // DRAW HOLD PIECE
     if (!can_hold) {
@@ -179,7 +179,7 @@ void DrawGameplayScreen(void)
     }
 
     // DRAW BLOCKS
-    for (int i = 0; i < ROW + 4; i++) {
+    for (int i = 0; i < ROW + BOARD_START_POS_Y; i++) {
         for (int j = 0; j < COL; j++) { // X coordinates, col number??
             if (board[i][j] == FLOATING)
                 DrawRectangle(BLOCK_SIZE * j, BLOCK_SIZE * i, BLOCK_SIZE, BLOCK_SIZE, tetr_colors[piece]);
@@ -199,9 +199,9 @@ void DrawGameplayScreen(void)
 
     // DRAW GRID LINES
     for (int i = 0; i < COL + 1; i++) {
-        DrawLineV((Vector2){(float)BLOCK_SIZE * i, BLOCK_SIZE * 4}, (Vector2){ (float)BLOCK_SIZE * i, (float)BLOCK_SIZE * (ROW + 4)}, LIGHTGRAY);
+        DrawLineV((Vector2){(float)BLOCK_SIZE * i, BLOCK_SIZE * 4}, (Vector2){ (float)BLOCK_SIZE * i, (float)BLOCK_SIZE * (ROW + BOARD_START_POS_Y)}, LIGHTGRAY);
     }
-    for (int i = 4; i < ROW + 4 + 1; i++) {
+    for (int i = BOARD_START_POS_Y; i < ROW + BOARD_START_POS_Y + 1; i++) {
         DrawLineV((Vector2){0, (float)BLOCK_SIZE * i}, (Vector2){(float)BLOCK_SIZE * COL, (float)BLOCK_SIZE * i}, LIGHTGRAY);
     }
     EndMode2D();
@@ -224,7 +224,7 @@ void UnloadGameplayScreen(void)
 // Gameplay Screen should finish?
 int FinishGameplayScreen(void)
 {
-    return finishScreen;
+    return is_game_over();
 }
 
 // only soft_drop needs the framesCounter

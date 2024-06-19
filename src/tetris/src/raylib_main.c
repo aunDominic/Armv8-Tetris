@@ -9,9 +9,6 @@
 *   delay this outcome, the higher their score will be.
 *
 ********************************************************************************************/
-#include <stdlib.h>
-#include <time.h>
-
 #include "raylib.h"
 #include "screens.h"    // NOTE: Declares global (extern) variables and screens functions
 
@@ -70,9 +67,6 @@ int main(void)
     // Setup and init first screen
     currentScreen = LOGO;
     InitLogoScreen();
-
-    // Setup random number generator seed
-    srand(time(NULL));
 
     SetTargetFPS(60);       // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
