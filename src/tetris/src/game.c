@@ -69,11 +69,20 @@ u16_t lines_cleared = 0; // number of lines cleared
 /// of the initialization moment, of the most recent game
 static i64_t game_init_timestamp = -1; // negative means uninitialized
 
+/// the state of the game:
+/// - `0` means still going on
+/// - anything else is the integer encoding of end-of-game statistics
+static u64_t game_state = 0;
+
 
 // FUNCTION IMPLEMENTATIONS
 
 void init_board(void){
     time(&game_init_timestamp); // set initialization timestamp
+    game_state = 0; // mark game state as still going on
+    level = 1; // reset player level
+    score = 0; // reset player score
+    lines_cleared = 0; // reset number of lines cleared
 
     for (int i = 0; i < ROW + BOARD_START_POS_Y; i++){
         for (int j = 0; j < COL; j++){
@@ -97,23 +106,6 @@ static void print_binary(u64_t number)
 }
 
 u16_t get_elapsed_time(void) {
-    // TEST:
-    EndOfGameStats eogse = { .stats = {
-            .level = 994,
-            .lines_cleared = 9948,
-            .score = 50100100,
-            .elapsed_time_integer_encoding = ((ElapsedTime){ .time = {
-                    .seconds = 49,
-                    .minutes = 39,
-                    .hours = 2
-            } }).integer_encoding
-    } };
-
-
-    print_binary(eogse.integer_encoding);
-    printf("\n");
-    printf("%lu\n", eogse.integer_encoding);
-
     assert(game_init_timestamp > 0); // make sure it is initialized
 
     // get elapsed seconds
@@ -468,7 +460,23 @@ bool is_game_over(void) {
         // check for the line above the beginning of the board, for game over
         switch ((Tetrominoes_type)board[BOARD_START_POS_Y - 1][column]) {
             case EMPTY: case CLEAR: case FLOATING: continue;
-            default: return true;
+            default:
+                // if its game over, update the game state accordingly
+                if (game_state == 0) {
+                    // make end of game stats union
+                    EndOfGameStats stats = { .stats = {
+                            .level = level,
+                            .lines_cleared = lines_cleared,
+                            .score = score,
+                            .elapsed_time_integer_encoding = get_elapsed_time()
+                    } };
+
+                    // return the integer encoding
+                    game_state = stats.integer_encoding;
+                }
+
+                // return true
+                return true;
         }
     }
     return false;
@@ -528,6 +536,8 @@ void handle_gravity(int frames_counter) {
 }
 
 u64_t get_end_of_game_stats(void) {
-    // TODO: implement
-    return 0;
+    // make sure its actually game over
+    assert(game_state != 0);
+
+    return game_state;
 }
