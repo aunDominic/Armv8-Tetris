@@ -30,17 +30,14 @@ static Register reg_from_regStr(const char *strReg);
  */
 Register handle_register(char **remainingLine) {
 
-    // skips any leading whitespace
     while (isspace((unsigned char) **remainingLine)) {
         (*remainingLine)++;
     }
-    // printf("Register handling: %s\n", *remainingLine);
 
     char *rest;
     const char *strReg = strtok_r(*remainingLine, ",", &rest);
-    // str_reg should hopefully be "x0"
 
-    // now determine type of register from string, adjust remainingLine so it points to the thing after comma
+    // adjust remainingLine so it points to the thing after comma
     *remainingLine = rest;
     return reg_from_regStr(strReg);
 }
@@ -89,8 +86,6 @@ void print_binary(INST number) {
     printf("\n");
 }
 
-// could change this function so it takes in a INST * instead and return void
-// however i like being more explicit and allows instr to be used as a register by compiler potentially
 void modify_instruction(INST *instruction, const int x, const int y, const int value) {
     // Calculate the number of bits to be modified
 

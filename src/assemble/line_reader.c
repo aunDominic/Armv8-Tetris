@@ -78,8 +78,7 @@ INST lineHandler(char *line, uint32_t address) {
             break;
 
         case MOV: case NEG: case NEGS: case MVN:
-            // these are aliases
-            // so just transform them into the two_op_inst
+            // these are aliases for two_op_inst
             returnVal = single_op_inst_alias(remainingLine, opcode);
             break;
 
@@ -88,7 +87,7 @@ INST lineHandler(char *line, uint32_t address) {
             break;
 
         case CMP: case CMN: case TST:
-            // basically all we have to do is transform them using the zero register to a two_op
+            // these are also aliase for two_op_inst
             returnVal = two_op_nodest_inst(remainingLine, opcode);
             break;
 

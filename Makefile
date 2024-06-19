@@ -17,8 +17,8 @@ EMULATE_SRCS := $(shell find $(EMULATE_SRC_DIR) -name '*.c')
 ASSEMBLE_SRCS := $(shell find $(ASSEMBLE_SRC_DIR) -name '*.c')
 
 # Prepends BUILD_DIR and appends .o to every src file
-EMULATE_OBJS := $(EMULATE_SRCS:$(EMULATE_SRC_DIR)/%=$(BUILD_DIR)/emulate/%.o)
-ASSEMBLE_OBJS := $(ASSEMBLE_SRCS:$(ASSEMBLE_SRC_DIR)/%=$(BUILD_DIR)/assemble/%.o)
+EMULATE_OBJS := $(EMULATE_SRCS:$(EMULATE_SRC_DIR)/%=$(BUILD_DIR)/emulated/%.o)
+ASSEMBLE_OBJS := $(ASSEMBLE_SRCS:$(ASSEMBLE_SRC_DIR)/%=$(BUILD_DIR)/assembled/%.o)
 
 # String substitution (suffix version without %)
 EMULATE_DEPS := $(EMULATE_OBJS:.o=.d)
@@ -34,21 +34,21 @@ CPPFLAGS := $(INC_FLAGS) -MMD -MP
 # Build rules for each target
 all: $(TARGETS)
 
-assemble: $(BUILD_DIR)/assemble_executable
-emulate: $(BUILD_DIR)/emulate_executable
+assemble: $(BUILD_DIR)/assemble
+emulate: $(BUILD_DIR)/emulate
 
-$(BUILD_DIR)/assemble_executable: $(ASSEMBLE_OBJS)
+$(BUILD_DIR)/assemble: $(ASSEMBLE_OBJS)
 	$(CC) $(ASSEMBLE_OBJS) -o $@ $(LDFLAGS)
 
-$(BUILD_DIR)/emulate_executable: $(EMULATE_OBJS)
+$(BUILD_DIR)/emulate: $(EMULATE_OBJS)
 	$(CC) $(EMULATE_OBJS) -o $@ $(LDFLAGS)
 
 # Build step for C source
-$(BUILD_DIR)/emulate/%.c.o: $(EMULATE_SRC_DIR)/%.c
+$(BUILD_DIR)/emulated/%.c.o: $(EMULATE_SRC_DIR)/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-$(BUILD_DIR)/assemble/%.c.o: $(ASSEMBLE_SRC_DIR)/%.c
+$(BUILD_DIR)/assembled/%.c.o: $(ASSEMBLE_SRC_DIR)/%.c
 	mkdir -p $(dir $@)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
