@@ -8,8 +8,16 @@
 #include "common_types.h"
 #include <assert.h>
 
-// returns the pointer to the remainingString after register input is handled
-// alternative to this is returning a Register but using char **remainingLine
+/* PRE: string is after op_code ie it starts with a known register definition
+ * example string this will receive is "x0, x0, #1, lsl #12"
+ * remainingLine will skip the character after the comma
+ * Assumes it may have leading whitespace.
+ * Modifies remainingLine to point to the thing after the comma.
+
+ * could probably just make handle_register return a binary value but its useful
+ * to have an intermediate representation (as its used for other functions)
+ * sometimes I might need the extra information
+ */
 Register handle_register(char **remainingLine);
 
 void print_binary(INST number);
@@ -18,18 +26,17 @@ void modify_instruction(INST *instruction, int x, int y, int32_t value);
 
 uint32_t reg_to_binary(Register reg);
 
-// assumes string starts with whitespace or start of shift 'string'
+// PRE: string starts with whitespace or start of shift 'string'
 // also assumes there's a # for all shifts
-// ie doesn't start with comma
-// example would be " asr #15"
+// example input: " asr #15"
 // might also be a null char
 Shifter determineShift(char *remainingLine);
 
 // takes in an opcode and categorises it and sees if its negated operated
 OpcodeType get_opcode_type(Opcode opcode);
 
-// basically if i have " R1, R2", I need to transform it to
-// "R1, RZR, R2"
+// PRE: Input is like " R1, R2"
+// MODIFIES inputString to be "R1, RZR, R2"
 // ie inserting RZR in the middle
 void transform_middle(char *instruction);
 

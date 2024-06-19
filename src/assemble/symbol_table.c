@@ -9,6 +9,12 @@
 
 #define INITIAL_SIZE 16
 
+struct SymbolTable {
+    Symbol *symbols;
+    int size;
+    int capacity;
+};
+
 // make sure to initialize this at start of program.
 SymbolTable *symbol_table = NULL;
 

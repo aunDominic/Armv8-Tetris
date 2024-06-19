@@ -80,17 +80,14 @@ int main(const int argc, const char **argv) {
         // fgets stores '\n' so turns this into a NULL_CHAR as we don't want this
         buffer[strcspn(buffer, "\n")] = NULL_CHAR;
         if (strlen(buffer) > 0) {
-            // non-empty line
-
             // we don't lines with labels
             if (is_label(buffer)) {
                 continue;
             }
 
-            // handle the different cases
+            // lineHandler then handles the different cases
             const INST instructionToOutput = lineHandler(buffer, address);
             instructions[lineNumber(address)] = instructionToOutput;
-
             address += INST_SIZE;
         }
     }
