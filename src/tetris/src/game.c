@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
+#include <time.h>
 
 #include "tetrominoes.h"
 #include "random_piece.h"
@@ -57,11 +58,23 @@ pair shadow_pos = {.x = PIECE_START_POS_X, .y = PIECE_START_POS_Y}; // coordinat
 // can_hold resets after every successful piece placement
 bool can_hold = true;
 
-u32_t level = 1; // player level
-u64_t score = 0; // layer score
-u32_t lines_cleared = 0; // number of lines cleared
+u16_t level = 1;
+u32_t score = 0; // layer score
+u16_t lines_cleared = 0; // number of lines cleared
+
+
+// MODULE (LOCAL) VARIABLES
+
+/// variable that holds the unix timestamp (in seconds)
+/// of the initialization moment, of the most recent game
+static i64_t game_init_timestamp = -1; // negative means uninitialized
+
+
+// FUNCTION IMPLEMENTATIONS
 
 void init_board(void){
+    time(&game_init_timestamp); // set initialization timestamp
+
     for (int i = 0; i < ROW + BOARD_START_POS_Y; i++){
         for (int j = 0; j < COL; j++){
             board[i][j] = EMPTY;
@@ -73,6 +86,56 @@ void init_board(void){
     piece_pos.y = PIECE_START_POS_Y;
     redraw_piece();
     set_shadow();
+}
+
+static void print_binary(u64_t number)
+{
+    if (number >> 1) {
+        print_binary(number >> 1);
+    }
+    putc((number & 1) ? '1' : '0', stdout);
+}
+
+u16_t get_elapsed_time(void) {
+    // TEST:
+    EndOfGameStats eogse = { .stats = {
+            .level = 994,
+            .lines_cleared = 9948,
+            .score = 50100100,
+            .elapsed_time_integer_encoding = ((ElapsedTime){ .time = {
+                    .seconds = 49,
+                    .minutes = 39,
+                    .hours = 2
+            } }).integer_encoding
+    } };
+
+
+    print_binary(eogse.integer_encoding);
+    printf("\n");
+    printf("%lu\n", eogse.integer_encoding);
+
+    assert(game_init_timestamp > 0); // make sure it is initialized
+
+    // get elapsed seconds
+    time_t seconds = time(NULL) - game_init_timestamp;
+
+    // compute hours, and update elapsed seconds accordingly
+    u8_t hours = seconds / (60 * 60);
+    seconds -= hours * 60 * 60;
+
+    // compute minutes, and update elapsed seconds accordingly
+    u8_t minutes = seconds / 60;
+    seconds -= minutes * 60;
+
+    // create struct `ElapsedTime` union to encode into unsigned integer
+    ElapsedTime elapsed_time = { .time = {
+            .seconds = seconds,
+            .minutes = minutes,
+            .hours = hours,
+    } };
+
+    // return the integer encoding
+    return elapsed_time.integer_encoding;
 }
 
 static bool is_line_filled(const int line[]){
@@ -462,4 +525,9 @@ void handle_gravity(int frames_counter) {
 
     if (frames_counter % gravity_time == 0)
         gravity();
+}
+
+u64_t get_end_of_game_stats(void) {
+    // TODO: implement
+    return 0;
 }

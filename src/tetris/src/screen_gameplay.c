@@ -4,8 +4,6 @@
 *
 **********************************************************************************************/
 
-#include <stdio.h>
-
 #include "raylib.h"
 #include "screens.h"
 
@@ -142,7 +140,12 @@ void DrawGameplayScreen(void)
     BeginMode2D(camera);
     // Draw full scene with first camera
 
-    // Draw stats:
+    // Draw timer
+    ElapsedTime elapsedTime = { .integer_encoding = get_elapsed_time() };
+    DrawText(TextFormat("TIME: %02d:%02d:%02d", elapsedTime.time.hours, elapsedTime.time.minutes, elapsedTime.time.seconds),
+             0, -120, 20, BLACK);
+
+    // Draw stats
     DrawText(TextFormat("SCORE: %u", score), 0, -90, 20, BLACK);
     DrawText(TextFormat("LINES CLEARED: %u", lines_cleared), 0, -60, 20, BLACK);
     DrawText(TextFormat("LEVEL: %u", level), 0, -30, 20, BLACK);

@@ -4,6 +4,19 @@
 #include "types.h"
 #include "tetrominoes.h"
 
+/// The next five pieces that will be dropped,
+/// encoded as a 16-bit unsigned integer, but conveniently
+/// accessed through union properties
+///
+/// The bits mean the following:
+/// - 00-02: the first tetromino type, in the range of 0..7
+/// - 03-05: the second tetromino type, in the range of 0..7
+/// - 06-08: the third tetromino type, in the range of 0..7
+/// - 09-11: the fourth tetromino type, in the range of 0..7
+/// - 12-14: the fifth tetromino type, in the range of 0..7
+/// - 15: unused
+///
+/// A piece type of 0 is an empty piece, while 1..7 are the usual O,I,S,Z,L,J,T
 typedef union {
     u16_t integerEncoding: 15;
     struct {
@@ -19,10 +32,10 @@ typedef union {
 /// encoded as a 16-bit unsigned integer.
 ///
 /// The bits mean the following:
-/// - 0-2: the first tetromino type, in the range of 0..7
-/// - 3-5: the second tetromino type, in the range of 0..7
-/// - 6-8: the third tetromino type, in the range of 0..7
-/// - 9-11: the fourth tetromino type, in the range of 0..7
+/// - 00-02: the first tetromino type, in the range of 0..7
+/// - 03-05: the second tetromino type, in the range of 0..7
+/// - 06-08: the third tetromino type, in the range of 0..7
+/// - 09-11: the fourth tetromino type, in the range of 0..7
 /// - 12-14: the fifth tetromino type, in the range of 0..7
 /// - 15: unused
 ///
