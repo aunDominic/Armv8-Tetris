@@ -94,6 +94,8 @@ void InitGameplayScreen(void)
     scoreLevelLinesTexture = LoadRenderTexture(100, 160);
     timerTexture = LoadRenderTexture(145, 20);
 
+    PlayMusicStream(music); // play theme music
+
     // TODO: Initialize GAMEPLAY screen variables here!
     framesCounter = 0;
     finishScreen = 0;
@@ -342,6 +344,9 @@ void UnloadGameplayScreen(void)
     UnloadRenderTexture(holdPieceTexture);
     UnloadRenderTexture(scoreLevelLinesTexture);
     UnloadRenderTexture(timerTexture);
+
+    // stop playing theme music
+    StopMusicStream(music);
 }
 
 // Gameplay Screen should finish?

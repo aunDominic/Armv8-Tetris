@@ -58,11 +58,10 @@ int main(void)
 
     // Load global data (assets that must be available in all screens, i.e. font)
     font = LoadFont("resources/mecha.png");
-    music = LoadMusicStream("resources/ambient.ogg");
+    music = LoadMusicStream("resources/tetris.mp3");
     fxCoin = LoadSound("resources/coin.wav");
 
-    SetMusicVolume(music, 0.0f); // TODO: set back to `1.0f` when correct music loaded
-    PlayMusicStream(music);
+    SetMusicVolume(music, 1.0f);
 
     // Setup and init first screen
     currentScreen = LOGO;
