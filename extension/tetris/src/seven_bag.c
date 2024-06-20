@@ -21,7 +21,7 @@ static struct {
 
 /// this represents the next seven pieces that were (or will be)
 /// produced by the actual bag - it is guaranteed to not diverge
-extern TetrominoType bag[BAG_SIZE] = { 0 };
+TetrominoType bag[BAG_SIZE] = { 0 };
 
 //\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
     MODULE (INTERNAL) FUNCTIONS
