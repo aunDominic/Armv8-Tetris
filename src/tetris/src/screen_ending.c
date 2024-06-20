@@ -46,18 +46,19 @@ void DrawEndingScreen(void)
     // TODO: Draw ENDING screen here!
     DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), RAYWHITE);
 
+    DrawTextEx(font, "GAME OVER", (Vector2){ 20, 10 }, font.baseSize*3.0f, 4, DARKBLUE);
+    DrawText("PRESS ENTER or", 165, 320, 20, DARKBLUE);
+    DrawText("TAP to PLAY AGAIN", 150, 345, 20, DARKBLUE);
+
     // grab end-of-game statistics, and timer
     EndOfGameStats endOfGameStats = { .integer_encoding = get_end_of_game_stats() };
     ElapsedTime elapsedTime = { .integer_encoding = endOfGameStats.stats.elapsed_time_integer_encoding };
     DrawText(TextFormat("TIME: %02d:%02d:%02d", elapsedTime.time.hours, elapsedTime.time.minutes, elapsedTime.time.seconds),
-             300, 60, 20, BLACK);
-    DrawText(TextFormat("SCORE: %u", endOfGameStats.stats.score), 300, 90, 20, BLACK);
-    DrawText(TextFormat("LINES CLEARED: %u", endOfGameStats.stats.lines_cleared), 300, 120, 20, BLACK);
-    DrawText(TextFormat("LEVEL: %u", endOfGameStats.stats.level), 300, 150, 20, BLACK);
+             20, 60, 20, BLACK);
+    DrawText(TextFormat("LEVEL: %u", endOfGameStats.stats.level), 20, 90, 20, BLACK);
+    DrawText(TextFormat("SCORE: %u", endOfGameStats.stats.score), 20, 120, 20, BLACK);
+    DrawText(TextFormat("CLEARED: %u", endOfGameStats.stats.lines_cleared), 20, 150, 20, BLACK);
 
-    Vector2 pos = { 20, 10 };
-    DrawTextEx(font, "ENDING SCREEN", pos, font.baseSize*3.0f, 4, DARKBLUE);
-    DrawText("PRESS ENTER or TAP to RETURN to TITLE SCREEN", 120, 220, 20, DARKBLUE);
 }
 
 // Ending Screen Unload logic
