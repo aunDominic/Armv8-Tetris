@@ -83,7 +83,6 @@ int main(void)
     switch (currentScreen)
     {
         case LOGO: UnloadLogoScreen(); break;
-        case TITLE: UnloadTitleScreen(); break;
         case GAMEPLAY: UnloadGameplayScreen(); break;
         case ENDING: UnloadEndingScreen(); break;
         default: break;
@@ -112,7 +111,6 @@ static void ChangeToScreen(GameScreen screen)
     switch (currentScreen)
     {
         case LOGO: UnloadLogoScreen(); break;
-        case TITLE: UnloadTitleScreen(); break;
         case GAMEPLAY: UnloadGameplayScreen(); break;
         case ENDING: UnloadEndingScreen(); break;
         default: break;
@@ -122,7 +120,6 @@ static void ChangeToScreen(GameScreen screen)
     switch (screen)
     {
         case LOGO: InitLogoScreen(); break;
-        case TITLE: InitTitleScreen(); break;
         case GAMEPLAY: InitGameplayScreen(); break;
         case ENDING: InitEndingScreen(); break;
         default: break;
@@ -158,8 +155,6 @@ static void UpdateTransition(void)
             switch (transFromScreen)
             {
                 case LOGO: UnloadLogoScreen(); break;
-                case TITLE: UnloadTitleScreen(); break;
-                case OPTIONS: UnloadOptionsScreen(); break;
                 case GAMEPLAY: UnloadGameplayScreen(); break;
                 case ENDING: UnloadEndingScreen(); break;
                 default: break;
@@ -169,7 +164,6 @@ static void UpdateTransition(void)
             switch (transToScreen)
             {
                 case LOGO: InitLogoScreen(); break;
-                case TITLE: InitTitleScreen(); break;
                 case GAMEPLAY: InitGameplayScreen(); break;
                 case ENDING: InitEndingScreen(); break;
                 default: break;
@@ -217,22 +211,7 @@ static void UpdateDrawFrame(void)
             {
                 UpdateLogoScreen();
 
-                if (FinishLogoScreen()) TransitionToScreen(TITLE);
-
-            } break;
-            case TITLE:
-            {
-                UpdateTitleScreen();
-
-                if (FinishTitleScreen() == 1) TransitionToScreen(OPTIONS);
-                else if (FinishTitleScreen() == 2) TransitionToScreen(GAMEPLAY);
-
-            } break;
-            case OPTIONS:
-            {
-                UpdateOptionsScreen();
-
-                if (FinishOptionsScreen()) TransitionToScreen(TITLE);
+                if (FinishLogoScreen()) TransitionToScreen(GAMEPLAY);
 
             } break;
             case GAMEPLAY:
@@ -247,7 +226,7 @@ static void UpdateDrawFrame(void)
             {
                 UpdateEndingScreen();
 
-                if (FinishEndingScreen() == 1) TransitionToScreen(TITLE);
+                if (FinishEndingScreen() == 1) TransitionToScreen(GAMEPLAY);
 
             } break;
             default: break;
@@ -265,8 +244,6 @@ static void UpdateDrawFrame(void)
         switch(currentScreen)
         {
             case LOGO: DrawLogoScreen(); break;
-            case TITLE: DrawTitleScreen(); break;
-            case OPTIONS: DrawOptionsScreen(); break;
             case GAMEPLAY: DrawGameplayScreen(); break;
             case ENDING: DrawEndingScreen(); break;
             default: break;
