@@ -13,11 +13,21 @@
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
 //----------------------------------------------------------------------------------
-#define BLOCK_SIZE 20
+
+// color macros
 #define LIGHTBLUE CLITERAL(Color){0, 229, 255, 255}
 #define JBLUE CLITERAL(Color){0, 38, 255, 255}
 #define LIMEGREEN CLITERAL(Color){55, 255, 0, 255}
 #define SHADOW CLITERAL(Color){51, 51, 51, 150}
+#define BORDER_BLUE CLITERAL(Color){100, 210, 255, 150}
+
+// UI element size definitions
+#define BORDER_SIZE 7
+#define FONT_SIZE 20
+
+#define BOARD_BLOCK_SIZE 25
+#define NEXT_FIVE_BLOCK_SIZE 15
+#define HOLD_BLOCK_SIZE 15
 
 // DEFINITIONS for DAS MOVEMENT
 // Constants for ARR and DAS
@@ -76,11 +86,13 @@ static void DrawPiece(int posX, int posY, TetrominoType tetrominoType, Tetromino
 void InitGameplayScreen(void)
 {
     // load render textures
-    boardTexture = LoadRenderTexture(COL * BLOCK_SIZE, (ROW + BOARD_START_POS_Y) * BLOCK_SIZE);
-    nextFiveTexture = LoadRenderTexture(TETROMINO_SIZE_X * BLOCK_SIZE, 5 * TETROMINO_SIZE_Y * BLOCK_SIZE);
-    holdPieceTexture = LoadRenderTexture(TETROMINO_SIZE_X * BLOCK_SIZE, TETROMINO_SIZE_Y * BLOCK_SIZE);
-    scoreLevelLinesTexture = LoadRenderTexture(COL * BLOCK_SIZE, 90);
-    timerTexture = LoadRenderTexture(COL * BLOCK_SIZE, 30);
+    boardTexture = LoadRenderTexture(
+            COL * BOARD_BLOCK_SIZE,
+            (ROW + BOARD_START_POS_Y) * BOARD_BLOCK_SIZE);
+    nextFiveTexture = LoadRenderTexture(TETROMINO_SIZE_X * NEXT_FIVE_BLOCK_SIZE, 5 * TETROMINO_SIZE_Y * NEXT_FIVE_BLOCK_SIZE);
+    holdPieceTexture = LoadRenderTexture(TETROMINO_SIZE_X * HOLD_BLOCK_SIZE, TETROMINO_SIZE_Y * HOLD_BLOCK_SIZE);
+    scoreLevelLinesTexture = LoadRenderTexture(100, 160);
+    timerTexture = LoadRenderTexture(145, 20);
 
     // TODO: Initialize GAMEPLAY screen variables here!
     framesCounter = 0;
@@ -111,9 +123,16 @@ void DrawGameplayScreen(void)
     for (int i = 0; i < ROW + BOARD_START_POS_Y; i++) {
         for (int j = 0; j < COL; j++) { // X coordinates, col number??
             if (board[i][j] == FLOATING)
-                DrawRectangle(BLOCK_SIZE * j, BLOCK_SIZE * i, BLOCK_SIZE, BLOCK_SIZE, tetr_colors[piece]);
+                DrawRectangle(
+                        BOARD_BLOCK_SIZE * j,
+                        BOARD_BLOCK_SIZE * i,
+                        BOARD_BLOCK_SIZE,
+                        BOARD_BLOCK_SIZE, tetr_colors[piece]);
             else
-                DrawRectangle(BLOCK_SIZE * j, BLOCK_SIZE * i, BLOCK_SIZE, BLOCK_SIZE, tetr_colors[board[i][j]]);
+                DrawRectangle(BOARD_BLOCK_SIZE * j,
+                              BOARD_BLOCK_SIZE * i,
+                              BOARD_BLOCK_SIZE,
+                              BOARD_BLOCK_SIZE, tetr_colors[board[i][j]]);
         }
     }
 
@@ -123,57 +142,64 @@ void DrawGameplayScreen(void)
             int xcord = shadow_pos.x + j;
             int ycord = shadow_pos.y + i;
             if (tetrominoes[piece][rotation][i][j] == piece)
-                DrawRectangle(BLOCK_SIZE * xcord, BLOCK_SIZE * ycord, BLOCK_SIZE, BLOCK_SIZE, SHADOW);
+                DrawRectangle(BOARD_BLOCK_SIZE * xcord,
+                              BOARD_BLOCK_SIZE * ycord,
+                              BOARD_BLOCK_SIZE,
+                              BOARD_BLOCK_SIZE, SHADOW);
         }
     }
 
     // draw grid lines
     for (int i = 0; i < COL + 1; i++) {
-        DrawLineV((Vector2){(float)BLOCK_SIZE * i, BLOCK_SIZE * 4}, (Vector2){ (float)BLOCK_SIZE * i, (float)BLOCK_SIZE * (ROW + BOARD_START_POS_Y)}, LIGHTGRAY);
+        DrawLineV((Vector2){
+            (float)BOARD_BLOCK_SIZE * i,
+            BOARD_BLOCK_SIZE * 4},
+                  (Vector2){(float)BOARD_BLOCK_SIZE * i,
+                            (float)BOARD_BLOCK_SIZE * (ROW + BOARD_START_POS_Y)}, LIGHTGRAY);
     }
     for (int i = BOARD_START_POS_Y; i < ROW + BOARD_START_POS_Y + 1; i++) {
-        DrawLineV((Vector2){0, (float)BLOCK_SIZE * i}, (Vector2){(float)BLOCK_SIZE * COL, (float)BLOCK_SIZE * i}, LIGHTGRAY);
+        DrawLineV((Vector2){0, (float)BOARD_BLOCK_SIZE * i}, (Vector2){(float)BOARD_BLOCK_SIZE * COL, (float)BOARD_BLOCK_SIZE * i}, LIGHTGRAY);
     }
     EndTextureMode();
 
     // Draw the "next five pieces" UI element to texture
     //---------------------------------------------------------
     BeginTextureMode(nextFiveTexture);
-    ClearBackground(RAYWHITE);
+    ClearBackground(BLACK);
 
     for (int i = 0; i < 5; i++) {
-        DrawPiece(0,i * TETROMINO_SIZE_Y * BLOCK_SIZE,
-            next_five_pieces[i],
-            0, // default rotation upright
-            BLOCK_SIZE,
-            tetr_colors[next_five_pieces[i]]);
+        DrawPiece(0, i * TETROMINO_SIZE_Y * NEXT_FIVE_BLOCK_SIZE,
+                  next_five_pieces[i],
+                  0, // default rotation upright
+                  NEXT_FIVE_BLOCK_SIZE,
+                  tetr_colors[next_five_pieces[i]]);
     }
     EndTextureMode();
 
     // Draw the "hold piece" UI element to texture
     //---------------------------------------------------------
     BeginTextureMode(holdPieceTexture);
-    ClearBackground(RAYWHITE);
+    ClearBackground(BLACK);
 
     if (!can_hold) {
         // if can't hold, draw hold piece with opacity = 33.33%
         const float opacity = 33.33f;
         const Color currentPieceColor = tetr_colors[hold_piece_buffer];
         DrawPiece(0, 0,
-            hold_piece_buffer,
-            0, // default rotation upright
-            BLOCK_SIZE,
-            (Color){
+                  hold_piece_buffer,
+                  0, // default rotation upright
+            HOLD_BLOCK_SIZE,
+                  (Color){
                 .r = currentPieceColor.r,
                 .g = currentPieceColor.g,
                 .b = currentPieceColor.b,
                 .a = (unsigned char)(opacity / 100 * (float)currentPieceColor.a) });
     } else { // otherwise, draw hold piece with opacity = 100%
         DrawPiece(0, 0,
-            hold_piece_buffer,
-            0, // default rotation upright
-            BLOCK_SIZE,
-            tetr_colors[hold_piece_buffer]);
+                  hold_piece_buffer,
+                  0, // default rotation upright
+                  HOLD_BLOCK_SIZE,
+                  tetr_colors[hold_piece_buffer]);
     }
     EndTextureMode();
 
@@ -182,9 +208,18 @@ void DrawGameplayScreen(void)
     BeginTextureMode(scoreLevelLinesTexture);
     ClearBackground(RAYWHITE);
 
-    DrawText(TextFormat("SCORE: %u", score), 0, 0, 20, BLACK);
-    DrawText(TextFormat("LINES CLEARED: %u", lines_cleared), 0, 30, 20, BLACK);
-    DrawText(TextFormat("LEVEL: %u", level), 0, 60, 20, BLACK);
+    int levelY = 0;
+    DrawText("LEVEL", 0, levelY, FONT_SIZE, BLACK);
+    DrawText(TextFormat("%u", level), 0, levelY + 25, FONT_SIZE, BLACK);
+
+    int scoreY = levelY + 50 + BORDER_SIZE;
+    DrawText("SCORE", 0, scoreY, FONT_SIZE, BLACK);
+    DrawText(TextFormat("%u", score), 0, scoreY + 25, FONT_SIZE, BLACK);
+
+    int linesY = scoreY + 50 + BORDER_SIZE;
+    DrawText("LINES", 0, linesY, FONT_SIZE, BLACK);
+    DrawText(TextFormat("%u", lines_cleared), 0, linesY + 25, FONT_SIZE, BLACK);
+
     EndTextureMode();
 
     // Draw the "timer" UI element to texture
@@ -194,59 +229,107 @@ void DrawGameplayScreen(void)
 
     ElapsedTime elapsedTime = { .integer_encoding = get_elapsed_time() };
     DrawText(TextFormat("TIME: %02d:%02d:%02d", elapsedTime.time.hours, elapsedTime.time.minutes, elapsedTime.time.seconds),
-             0, 0, 20, BLACK);
+             0, 0, FONT_SIZE, BLACK);
     EndTextureMode();
 
     // Draw textures to screen, positioning them into a cohesive UI
     //---------------------------------------------------------
+    ClearBackground(RAYWHITE);
+
+    // draw the board and its border
+    int boardX = (GetScreenWidth() - boardTexture.texture.width) / 2;
+    int boardY = (GetScreenHeight() - boardTexture.texture.height) / 2;
+    DrawRectangleRounded(
+            (Rectangle){
+                .x = (float)boardX - BORDER_SIZE,
+                .y = (float)boardY - BORDER_SIZE,
+                .width = (float)boardTexture.texture.width + 2 * BORDER_SIZE,
+                .height = (float)boardTexture.texture.height + 2 * BORDER_SIZE },
+                0.05f,
+                100,
+                BORDER_BLUE);
+    DrawRectangle(
+            boardX,
+            boardY,
+            boardTexture.texture.width,
+            boardTexture.texture.height,
+            RAYWHITE);
     DrawTextureRec(
             boardTexture.texture,
             (Rectangle){
                     .width = (float)boardTexture.texture.width,
                     .height = (float)-boardTexture.texture.height },
-            (Vector2){
-                .x = (float)holdPieceTexture.texture.width,
-                .y = 0 },
+            (Vector2){ .x = (float)boardX, .y = (float)boardY },
             WHITE);
 
+    // draw the "next five" ui element with its border
+    int nextFiveX = ((boardX + boardTexture.texture.width + BORDER_SIZE) + GetScreenWidth() - nextFiveTexture.texture.width) / 2;
+    int nextFiveY = boardY + BOARD_START_POS_Y * BOARD_BLOCK_SIZE;
+    DrawRectangleRounded(
+            (Rectangle){
+                    .x = (float)nextFiveX - BORDER_SIZE,
+                    .y = (float)nextFiveY - BORDER_SIZE,
+                    .width = (float)nextFiveTexture.texture.width + 2 * BORDER_SIZE,
+                    .height = (float)nextFiveTexture.texture.height + 2 * BORDER_SIZE },
+            0.05f,
+            100,
+            GRAY);
     DrawTextureRec(
             nextFiveTexture.texture,
             (Rectangle){
                     .width = (float)nextFiveTexture.texture.width,
                     .height = (float)-nextFiveTexture.texture.height },
             (Vector2){
-                .x = (float)(holdPieceTexture.texture.width + boardTexture.texture.width),
-                .y = BOARD_START_POS_Y * BLOCK_SIZE },
+                .x = (float)nextFiveX,
+                .y = (float)nextFiveY },
             WHITE);
 
+    // draw the "hold piece" ui element with its border
+    int holdPieceX = (boardX - BORDER_SIZE - nextFiveTexture.texture.width) / 2;
+    int holdPieceY = boardY + BOARD_START_POS_Y * BOARD_BLOCK_SIZE;
+    DrawRectangleRounded(
+            (Rectangle){
+                    .x = (float)holdPieceX - BORDER_SIZE,
+                    .y = (float)holdPieceY - BORDER_SIZE,
+                    .width = (float)holdPieceTexture.texture.width + 2 * BORDER_SIZE,
+                    .height = (float)holdPieceTexture.texture.height + 2 * BORDER_SIZE },
+            0.05f,
+            100,
+            GRAY);
     DrawTextureRec(
             holdPieceTexture.texture,
             (Rectangle){
                     .width = (float)holdPieceTexture.texture.width,
                     .height = (float)-holdPieceTexture.texture.height },
             (Vector2){
-                    .x = 0,
-                    .y = BOARD_START_POS_Y * BLOCK_SIZE },
+                    .x = (float)holdPieceX,
+                    .y = (float)holdPieceY },
             WHITE);
 
+    // draw the level, score, and lines cleared
+    int scoreLevelLinesX = (boardX - BORDER_SIZE - scoreLevelLinesTexture.texture.width) / 2;
+    int scoreLevelLinesY = boardY + boardTexture.texture.height - scoreLevelLinesTexture.texture.height;
     DrawTextureRec(
             scoreLevelLinesTexture.texture,
             (Rectangle){
                     .width = (float)scoreLevelLinesTexture.texture.width,
                     .height = (float)-scoreLevelLinesTexture.texture.height },
             (Vector2){
-                    .x = (float)holdPieceTexture.texture.width,
-                    .y = (float)boardTexture.texture.height },
+                    .x = (float)scoreLevelLinesX,
+                    .y = (float)scoreLevelLinesY },
             WHITE);
 
+    // draw timer right above the board
+    int timerX = boardX + (boardTexture.texture.width - timerTexture.texture.width) / 2;
+    int timerY = boardY - BORDER_SIZE - timerTexture.texture.height - BORDER_SIZE;
     DrawTextureRec(
             timerTexture.texture,
             (Rectangle){
                     .width = (float)timerTexture.texture.width,
                     .height = (float)-timerTexture.texture.height },
             (Vector2){
-                    .x = (float)holdPieceTexture.texture.width,
-                    .y = (float)(boardTexture.texture.height + scoreLevelLinesTexture.texture.height) },
+                    .x = (float)timerX,
+                    .y = (float)timerY },
             WHITE);
 }
 
