@@ -381,9 +381,9 @@ void HandleInput(int framesCounter) {
         hold_piece();
     }
 
-    if (IsKeyPressed(KEY_R)) {
-        init_board();
-    }
+//    if (IsKeyPressed(KEY_R)) {
+//        init_board();
+//    }
 }
 
 static void DrawPiece(
