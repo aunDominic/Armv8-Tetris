@@ -1,7 +1,7 @@
 To build the Assembler and Emulator:
 Run:
-    make clean
-    make
+make clean then make
+
 This will then put the assemble and emulate executable in the build folder.
 
 To allow debug print statements:
