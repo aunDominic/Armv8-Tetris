@@ -57,13 +57,13 @@ static bool dasActive = false;
 
 Color tetr_colors[8] = {
         BLACK,
-        YELLOW,
-        LIGHTBLUE,
-        LIMEGREEN,
-        RED,
-        ORANGE,
-        JBLUE,
-        PURPLE,
+        YELLOW, // done
+        LIGHTBLUE, // done
+        LIMEGREEN, // done
+        RED, // done
+        ORANGE, // done
+        JBLUE, // done
+        PURPLE, // dibe
 };
 
 //----------------------------------------------------------------------------------
@@ -74,9 +74,12 @@ Color tetr_colors[8] = {
 // ie will handle rotation, move piece horizontally, hard drop, soft drop etc
 void HandleInput(int framesCounter);
 
+/// This will draw a block of the color corresponding to tetrominoType, to whatever thing is currently enabled
+static void DrawBlock(int posX, int posY, TetrominoType tetrominoType, int blockSize, Color tint);
+
 /// This will draw the provided tetrominoType to whatever thing is currently enabled,
 /// with the top-right corner of the tetrominoType being specified with the offsets
-static void DrawPiece(int posX, int posY, TetrominoType tetrominoType, TetrominoRotation tetrominoRotation, int blockSize, Color color);
+static void DrawPiece(int posX, int posY, TetrominoType tetrominoType, TetrominoRotation tetrominoRotation, int blockSize, Color tint);
 
 //----------------------------------------------------------------------------------
 // Gameplay Screen Functions Definition
@@ -121,20 +124,44 @@ void DrawGameplayScreen(void)
     BeginTextureMode(boardTexture);
     ClearBackground(RAYWHITE);
 
-    // draw blocks
-    for (int i = 0; i < ROW + BOARD_START_POS_Y; i++) {
+    // paint over the starting four lines, with black
+    DrawRectangle(0, 0, COL * BOARD_BLOCK_SIZE, BOARD_START_POS_Y * BOARD_BLOCK_SIZE, BLACK);
+
+    // draw blocks in the starting four lines
+    for (int i = 0; i < BOARD_START_POS_Y; i++) {
         for (int j = 0; j < COL; j++) { // X coordinates, col number??
             if (board[i][j] == FLOATING)
-                DrawRectangle(
-                        BOARD_BLOCK_SIZE * j,
-                        BOARD_BLOCK_SIZE * i,
-                        BOARD_BLOCK_SIZE,
-                        BOARD_BLOCK_SIZE, tetr_colors[piece]);
+                DrawBlock(BOARD_BLOCK_SIZE * j,
+                          BOARD_BLOCK_SIZE * i,
+                          piece,
+                          BOARD_BLOCK_SIZE,
+                          WHITE);
+            else if (board[i][j] != EMPTY)
+                DrawBlock(BOARD_BLOCK_SIZE * j,
+                          BOARD_BLOCK_SIZE * i,
+                          board[i][j],
+                          BOARD_BLOCK_SIZE,
+                          WHITE);
+
+        }
+    }
+
+    // draw blocks in the other lines
+    for (int i = BOARD_START_POS_Y; i < ROW + BOARD_START_POS_Y; i++) {
+        for (int j = 0; j < COL; j++) { // X coordinates, col number??
+            if (board[i][j] == FLOATING)
+                DrawBlock(BOARD_BLOCK_SIZE * j,
+                          BOARD_BLOCK_SIZE * i,
+                          piece,
+                          BOARD_BLOCK_SIZE,
+                          WHITE);
             else
-                DrawRectangle(BOARD_BLOCK_SIZE * j,
-                              BOARD_BLOCK_SIZE * i,
-                              BOARD_BLOCK_SIZE,
-                              BOARD_BLOCK_SIZE, tetr_colors[board[i][j]]);
+                DrawBlock(BOARD_BLOCK_SIZE * j,
+                          BOARD_BLOCK_SIZE * i,
+                          board[i][j],
+                          BOARD_BLOCK_SIZE,
+                          WHITE);
+
         }
     }
 
@@ -151,17 +178,6 @@ void DrawGameplayScreen(void)
         }
     }
 
-    // draw grid lines
-    for (int i = 0; i < COL + 1; i++) {
-        DrawLineV((Vector2){
-            (float)BOARD_BLOCK_SIZE * i,
-            BOARD_BLOCK_SIZE * 4},
-                  (Vector2){(float)BOARD_BLOCK_SIZE * i,
-                            (float)BOARD_BLOCK_SIZE * (ROW + BOARD_START_POS_Y)}, LIGHTGRAY);
-    }
-    for (int i = BOARD_START_POS_Y; i < ROW + BOARD_START_POS_Y + 1; i++) {
-        DrawLineV((Vector2){0, (float)BOARD_BLOCK_SIZE * i}, (Vector2){(float)BOARD_BLOCK_SIZE * COL, (float)BOARD_BLOCK_SIZE * i}, LIGHTGRAY);
-    }
     EndTextureMode();
 
     // Draw the "next five pieces" UI element to texture
@@ -186,22 +202,17 @@ void DrawGameplayScreen(void)
     if (!can_hold) {
         // if can't hold, draw hold piece with opacity = 33.33%
         const float opacity = 33.33f;
-        const Color currentPieceColor = tetr_colors[hold_piece_buffer];
         DrawPiece(0, 0,
                   hold_piece_buffer,
                   0, // default rotation upright
             HOLD_BLOCK_SIZE,
-                  (Color){
-                .r = currentPieceColor.r,
-                .g = currentPieceColor.g,
-                .b = currentPieceColor.b,
-                .a = (unsigned char)(opacity / 100 * (float)currentPieceColor.a) });
+                  CLITERAL(Color) { .r=255, .g=255, .b=255, .a=(u8_t)(255*opacity) });
     } else { // otherwise, draw hold piece with opacity = 100%
         DrawPiece(0, 0,
                   hold_piece_buffer,
                   0, // default rotation upright
                   HOLD_BLOCK_SIZE,
-                  tetr_colors[hold_piece_buffer]);
+                  WHITE);
     }
     EndTextureMode();
 
@@ -432,24 +443,31 @@ void HandleInput(int framesCounter) {
     }
 }
 
+static void DrawBlock(int posX, int posY, TetrominoType tetrominoType, int blockSize, Color tint) {
+    DrawTexturePro(blocksTexture,
+                   (Rectangle){ .x = (float)(5 * tetrominoType), .y = 0, .width = 5, .height = 5 },
+                   (Rectangle){ .x = (float)posX, .y = (float)posY, .width = (float)blockSize, .height = (float)blockSize },
+                   (Vector2){ 0 },
+                   0,
+                   tint);
+}
+
 static void DrawPiece(
         int posX,
         int posY,
         TetrominoType tetrominoType,
         TetrominoRotation tetrominoRotation,
         int blockSize,
-        Color color)
+        Color tint)
 {
     for (int y = 0; y < TETROMINO_SIZE_Y; y++)
         for (int x = 0; x < TETROMINO_SIZE_X; x++) {
-            // don't draw empty tetromino values
-            if (tetrominoes[(int)tetrominoType][tetrominoRotation][y][x] == TETROMINO_EMPTY) continue;
-
-            DrawRectangle(
-                    posX + x * blockSize,
-                    posY + y * blockSize,
-                    blockSize,
-                    blockSize,
-                    color);
+            TetrominoType blockType = tetrominoes[(int)tetrominoType][tetrominoRotation][y][x];
+            Color blockTint = blockType == EMPTY ? WHITE : tint; // don't tint empty blocks
+            DrawBlock(posX + x * blockSize,
+                      posY + y * blockSize,
+                      tetrominoes[(int)tetrominoType][tetrominoRotation][y][x],
+                      blockSize,
+                      blockTint);
         }
 }

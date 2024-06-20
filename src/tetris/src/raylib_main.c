@@ -18,6 +18,7 @@
 //----------------------------------------------------------------------------------
 GameScreen currentScreen = LOGO;
 Font font = { 0 };
+Texture blocksTexture = { 0 };
 Music music = { 0 };
 Sound fxGameOver = { 0 };
 
@@ -58,6 +59,7 @@ int main(void)
 
     // Load global data (assets that must be available in all screens, i.e. font)
     font = LoadFont("resources/mecha.png");
+    blocksTexture = LoadTexture("resources/blocks.png");
     music = LoadMusicStream("resources/tetris.mp3");
     fxGameOver = LoadSound("resources/game-over.wav");
 
@@ -89,6 +91,7 @@ int main(void)
 
     // Unload global data loaded
     UnloadFont(font);
+    UnloadTexture(blocksTexture);
     UnloadMusicStream(music);
     UnloadSound(fxGameOver);
 

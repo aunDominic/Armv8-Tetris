@@ -44,7 +44,7 @@ void UpdateEndingScreen(void)
 void DrawEndingScreen(void)
 {
     // TODO: Draw ENDING screen here!
-    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), BLUE);
+    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), RAYWHITE);
 
     // grab end-of-game statistics, and timer
     EndOfGameStats endOfGameStats = { .integer_encoding = get_end_of_game_stats() };
