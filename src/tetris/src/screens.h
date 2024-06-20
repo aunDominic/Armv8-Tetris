@@ -18,7 +18,7 @@ typedef enum GameScreen { UNKNOWN = -1, LOGO = 0, GAMEPLAY, ENDING } GameScreen;
 extern GameScreen currentScreen;
 extern Font font;
 extern Music music;
-extern Sound fxCoin;
+extern Sound fxGameOver;
 
 //----------------------------------------------------------------------------------
 // Logo Screen Functions Declaration

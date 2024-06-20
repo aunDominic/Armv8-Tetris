@@ -21,6 +21,8 @@ static int finishScreen = 0;
 // Ending Screen Initialization logic
 void InitEndingScreen(void)
 {
+    PlaySound(fxGameOver); // play game over sound
+
     // TODO: Initialize ENDING screen variables here!
     framesCounter = 0;
     finishScreen = 0;
@@ -35,7 +37,6 @@ void UpdateEndingScreen(void)
     if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
     {
         finishScreen = 1;
-        PlaySound(fxCoin);
     }
 }
 

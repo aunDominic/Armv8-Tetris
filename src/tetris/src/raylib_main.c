@@ -19,7 +19,7 @@
 GameScreen currentScreen = LOGO;
 Font font = { 0 };
 Music music = { 0 };
-Sound fxCoin = { 0 };
+Sound fxGameOver = { 0 };
 
 //----------------------------------------------------------------------------------
 // Local Variables Definition (local to this module)
@@ -59,7 +59,7 @@ int main(void)
     // Load global data (assets that must be available in all screens, i.e. font)
     font = LoadFont("resources/mecha.png");
     music = LoadMusicStream("resources/tetris.mp3");
-    fxCoin = LoadSound("resources/coin.wav");
+    fxGameOver = LoadSound("resources/game-over.wav");
 
     SetMusicVolume(music, 1.0f);
 
@@ -90,7 +90,7 @@ int main(void)
     // Unload global data loaded
     UnloadFont(font);
     UnloadMusicStream(music);
-    UnloadSound(fxCoin);
+    UnloadSound(fxGameOver);
 
     CloseAudioDevice();     // Close audio context
 
