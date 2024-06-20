@@ -61,7 +61,7 @@ clean:
 -include $(ASSEMBLE_DEPS)
 
 format:
-	find . -name '*.c' | xargs clang-format -i
+	find src/assemble src/emulate -name '*.c' | xargs clang-format -i
 
 # Cppcheck target
 .PHONY: cppcheck

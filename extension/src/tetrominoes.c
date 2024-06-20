@@ -255,10 +255,10 @@ void printTetrominoType(const TetrominoType type) {
     }
 }
 
-void printTetrominoes(const TetrominoType piece, const TetrominoRotation rotation) {
-    for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-            printf("%d", tetrominoes[(size_t)piece][rotation][i][j]);
+void printTetrominoes(const TetrominoType piece, const TetrominoRotation rotation){
+    for (int i = 0; i < 4; i++){
+        for (int j = 0; j < 4; j++){
+            printf("%d", tetrominoes[(size_t) piece][rotation][i][j]);
         }
         printf("\n");
     }

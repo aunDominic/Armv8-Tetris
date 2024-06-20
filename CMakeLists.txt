@@ -8,5 +8,5 @@ add_subdirectory(${EMULATOR_PATH})
 set(ASSEMBLER_PATH src/assemble)
 add_subdirectory(${ASSEMBLER_PATH})
 
-set(TETRIS_PATH extension/tetris)
+set(TETRIS_PATH extension)
 add_subdirectory(${TETRIS_PATH})

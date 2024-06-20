@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include <time.h>
@@ -22,20 +21,16 @@
     x = 0
 */
 
-#define START_POS_X (COL / 2)
-#define START_POS_Y 0
 #define LEVEL_UP_THRESHOLD 10
 
 /*////////////////////////
     FUNCTION DECLRATIONS
 */////////////////////////
 static void printBoard(); // Print board for debugging purposes
-void set_shadow(); // Sets the shadow position according to the piece position
-void init_board(); // Initialises board
-static bool is_line_filled(int line[]); // Checks if the line is filled duh
+
+static bool is_line_filled(const int line[]); // Checks if the line is filled duh
 static void clear_line(int line[]); // Clears the line (not the same as making it empty)
 static void shift_lines_down(int l, int u); // Called after clear line, shifts lines between [l,u] inclusive down
-void clear_lines(int l, int u); // Top level function called to perform necessary line clears.
 static void update_score(int lines);
 void set_piece(); // Places the piece on the board.
 static bool is_valid_orientation(); // Checks if the current orientation of the piece is valid (ie its position and rotation do not collide with the board)
@@ -49,46 +44,98 @@ static void gravity(void);
 // Initialises board
 // Extra 4 units of height for pieces to spawn.
 // These 4 lines may not be have any pieces placed in them.
-int board[ROW + 4][COL] = {EMPTY}; // Initialise board to empty
-TetrominoType piece = TETR_I; // Current piece in hand
+int board[ROW + BOARD_START_POS_Y][COL] = {EMPTY}; // Initialise board to empty
+TetrominoType piece = TETROMINO_I; // Current piece in hand
 TetrominoType hold_piece_buffer = 0; // set as 0 by default
 TetrominoType next_five_pieces[5] = { 0 }; // initialized to 0
 int rotation = 0; // Current rotation.
 // To get the current tetrimino
 // We use tetrominoes[piece][rotation] -> a 4x4 array containing the tetrimino
-pair piece_pos = {.x = START_POS_X, .y = START_POS_Y}; // coordinate of the left corner of the piece
-pair shadow_pos = {.x = START_POS_X, .y = START_POS_Y}; // coordinate of left corner of the piece's shadow
+pair piece_pos = {.x = PIECE_START_POS_X, .y = PIECE_START_POS_Y}; // coordinate of the left corner of the piece
+pair shadow_pos = {.x = PIECE_START_POS_X, .y = PIECE_START_POS_Y}; // coordinate of left corner of the piece's shadow
 
 // this is used so people can't infinitely spam the hold button to get extra time;
 // can_hold resets after every successful piece placement
 bool can_hold = true;
 
-u32_t level = 1; // player level
-u64_t score = 0; // layer score
-u32_t lines_cleared = 0; // number of lines cleared
+u16_t level = 1;
+u32_t score = 0; // layer score
+u16_t lines_cleared = 0; // number of lines cleared
+
+
+// MODULE (LOCAL) VARIABLES
+
+/// variable that holds the unix timestamp (in seconds)
+/// of the initialization moment, of the most recent game
+static i64_t game_init_timestamp = -1; // negative means uninitialized
+
+/// the state of the game:
+/// - `0` means still going on
+/// - anything else is the integer encoding of end-of-game statistics
+static u64_t game_state = 0;
+
+
+// FUNCTION IMPLEMENTATIONS
 
 void init_board(void){
-    for (int i = 0; i < ROW + 4; i++){
+    time(&game_init_timestamp); // set initialization timestamp
+    game_state = 0; // mark game state as still going on
+    level = 1; // reset player level
+    score = 0; // reset player score
+    lines_cleared = 0; // reset number of lines cleared
+
+    for (int i = 0; i < ROW + BOARD_START_POS_Y; i++){
         for (int j = 0; j < COL; j++){
             board[i][j] = EMPTY;
         }
     }
-    srand(time(NULL));
     piece = get_next_piece();
     rotation = 0;
-    piece_pos.x = START_POS_X;
-    piece_pos.y = START_POS_Y;
+    piece_pos.x = PIECE_START_POS_X;
+    piece_pos.y = PIECE_START_POS_Y;
     redraw_piece();
     set_shadow();
 }
 
-static bool is_line_filled(int line[]) {
-    for (int i = 0; i < COL; i++)
-        if (line[i] == EMPTY) return false;
+static void print_binary(u64_t number)
+{
+    if (number >> 1) {
+        print_binary(number >> 1);
+    }
+    putc((number & 1) ? '1' : '0', stdout);
+}
+
+u16_t get_elapsed_time(void) {
+    assert(game_init_timestamp > 0); // make sure it is initialized
+
+    // get elapsed seconds
+    time_t seconds = time(NULL) - game_init_timestamp;
+
+    // compute hours, and update elapsed seconds accordingly
+    u8_t hours = seconds / (60 * 60);
+    seconds -= hours * 60 * 60;
+
+    // compute minutes, and update elapsed seconds accordingly
+    u8_t minutes = seconds / 60;
+    seconds -= minutes * 60;
+
+    // create struct `ElapsedTime` union to encode into unsigned integer
+    ElapsedTime elapsed_time = { .time = {
+            .seconds = seconds,
+            .minutes = minutes,
+            .hours = hours,
+    } };
+
+    // return the integer encoding
+    return elapsed_time.integer_encoding;
+}
+
+static bool is_line_filled(const int line[]){
+    for (int i = 0; i < COL; i++) if (line[i] == EMPTY) return false;
     return true;
 }
 
-static void clear_line(int line[]) {
+static void clear_line(int line[]){
     for (int i = 0; i < COL; i++) line[i] = CLEAR;
 }
 
@@ -97,43 +144,45 @@ static void update_score(int lines) {
         case 1: score += 100 * level; break;
         case 2: score += 300 * level; break;
         case 3: score += 500 * level; break;
-        default: score += 800 * level;  // tetris
+        default: score += 800 * level; // tetris
     }
 }
 
-static void shift_lines_down(int l, int u) {
-    // Naive Gravity.
-    // Lines are shifted down by exactly the number of cleared lines below them
-    // The piece is placed between the y coords [l, u], inclusive
-    // A higher y value -> a lower position on the board. The y axis points downwards, similar to how 2D Arrays are
-    // organised
+static void shift_lines_down(int l, int u){
+   // Naive Gravity.
+   // Lines are shifted down by exactly the number of cleared lines below them
+   // The piece is placed between the y coords [l, u], inclusive
+   // A higher y value -> a lower position on the board. The y axis points downwards, similar to how 2D Arrays are organised
     assert(l <= u);
     int cnt_clear_lines = 0;
-    for (int i = u; i >= l; i--) {
+    for (int i = u; i >= l; i--){
         if (board[i][0] == CLEAR) {
             cnt_clear_lines++;
-        } else if (cnt_clear_lines > 0) {
-            for (int j = 0; j < COL; j++) {
-                board[i + cnt_clear_lines][j] = board[i][j];
+        }
+        else if (cnt_clear_lines > 0){
+            for (int j = 0; j < COL; j++){
+                board[i+cnt_clear_lines][j] = board[i][j];
                 board[i][j] = EMPTY;
             }
             printf("debug: Shifting lines down..\n");
         }
     }
-    if (cnt_clear_lines > 0) update_score(cnt_clear_lines);  // update score
-    lines_cleared += cnt_clear_lines;                        // update lines cleared
+    if (cnt_clear_lines > 0)
+        update_score(cnt_clear_lines); // update score
+    lines_cleared += cnt_clear_lines; // update lines cleared
 }
 
 // Clears the lines between the y coordinates (l, u)
 // l, u are supplied when a piece is placed.
 // is called whenever a piece is placed.
 
-void clear_lines(int l, int u) {
-    assert(l < ROW + 4 && u < ROW + 4);
+
+void clear_lines(int l, int u){
+    assert(l < ROW+BOARD_START_POS_Y && u < ROW+BOARD_START_POS_Y);
     assert(l < u);
 
-    for (int i = l; i <= u; i++) {
-        if (is_line_filled(board[i])) {
+    for (int i = l; i <= u; i++){
+        if (is_line_filled(board[i])){
             printf("debug: Clearing lines...\n");
             clear_line(board[i]);
         }
@@ -143,7 +192,6 @@ void clear_lines(int l, int u) {
     // update the level according to lines cleared
     level = lines_cleared / LEVEL_UP_THRESHOLD + 1;
 }
-
 // void update_piece_shadow(void){
 //     for (int i = 0 < MAX_PIECE_SIZE; i++){
 //         for (int j = 0; j < MAX_PIECE_SIZE; j++){
@@ -160,15 +208,15 @@ void set_piece(void){
             }
         }
     }
-    clear_lines(0, ROW + 3);
+    clear_lines(0, ROW+3);
 
     printf("debug: Sucessfully set piece. Piece: %d at (%d, %d)\n", piece, piece_pos.x, piece_pos.y);
 
     // code for generating piece and setting it in right place
     // sidenote: some of this code might be needed to implement hold_piece
     piece = get_next_piece();
-    piece_pos.x = START_POS_X;
-    piece_pos.y = START_POS_Y;
+    piece_pos.x = PIECE_START_POS_X;
+    piece_pos.y = PIECE_START_POS_Y;
     rotation = 0;
     can_hold = true;
 
@@ -176,21 +224,19 @@ void set_piece(void){
     printTetrominoes(piece, rotation);
     redraw_piece();
 }
-
-static void clear_draw_piece(void) {
-    for (int i = 0; i < MAX_PIECE_SIZE; i++) {      // Piece Height
-        for (int j = 0; j < MAX_PIECE_SIZE; j++) {  // Piece Width
-            if (tetrominoes[piece][rotation][i][j] == piece) {
+static void clear_draw_piece(void){
+    for (int i = 0; i < MAX_PIECE_SIZE; i++){ // Piece Height
+        for (int j = 0; j < MAX_PIECE_SIZE; j++){ // Piece Width
+            if (tetrominoes[piece][rotation][i][j] == piece){
                 board[piece_pos.y + i][j + piece_pos.x] = EMPTY;
             }
         }
     }
 }
-
-static void redraw_piece(void) {
-    for (int i = 0; i < MAX_PIECE_SIZE; i++) {      // Piece Height
-        for (int j = 0; j < MAX_PIECE_SIZE; j++) {  // Piece Width
-            if (tetrominoes[piece][rotation][i][j] == piece) {
+static void redraw_piece(void){
+    for (int i = 0; i < MAX_PIECE_SIZE; i++){ // Piece Height
+        for (int j = 0; j < MAX_PIECE_SIZE; j++){ // Piece Width
+            if (tetrominoes[piece][rotation][i][j] == piece){
                 board[piece_pos.y + i][j + piece_pos.x] = FLOATING;
             }
         }
@@ -204,7 +250,7 @@ static bool is_valid_orientation(void){
                     piece_pos.x + j < 0
                 ||  piece_pos.x + j >= COL
                 ||  piece_pos.y + i < 0
-                ||  piece_pos.y + i >= ROW + 4
+                ||  piece_pos.y + i >= ROW + BOARD_START_POS_Y
                 ||  (board[piece_pos.y + i][piece_pos.x + j] != EMPTY) &&
                     board[piece_pos.y + i][piece_pos.x + j] != FLOATING) ){
                 return false;
@@ -213,10 +259,9 @@ static bool is_valid_orientation(void){
     }
     return true;
 }
-
-void move_piece_left(void) {
+void move_piece_left(void){
     piece_pos.x--;
-    if (!is_valid_orientation()) {
+    if (!is_valid_orientation()){
         piece_pos.x++;
         return;
     }
@@ -225,10 +270,9 @@ void move_piece_left(void) {
     piece_pos.x--;
     redraw_piece();
 }
-
-void move_piece_right(void) {
+void move_piece_right(void){
     piece_pos.x++;
-    if (!is_valid_orientation()) {
+    if (!is_valid_orientation()){
         piece_pos.x--;
         return;
     }
@@ -238,7 +282,7 @@ void move_piece_right(void) {
     redraw_piece();
 }
 
-void rotate_piece_clockwise(void) {
+void rotate_piece_clockwise(void){
     int temp = rotation;
     rotation = (rotation + 1) % 4;
     pair temp_piece_pos = piece_pos;
@@ -246,8 +290,7 @@ void rotate_piece_clockwise(void) {
     if (is_valid_orientation()) {
         rotation = temp;
         clear_draw_piece();
-        rotation++;
-        rotation %= 4;
+        rotation++; rotation %= 4;
         redraw_piece();
         return;
     }
@@ -265,10 +308,10 @@ void rotate_piece_clockwise(void) {
             printf("Wallkick successful clockwise\n");
             rotation = temp;
             piece_pos = temp_piece_pos;
-            clear_draw_piece();  // reset position so we can clear it
+            clear_draw_piece(); // reset position so we can clear it
             rotation = (rotation + 1) % 4;
             piece_pos = new_pos;
-            redraw_piece();  // apply the new thing so we can redraw
+            redraw_piece(); // apply the new thing so we can redraw
             return;
         }
     }
@@ -279,7 +322,7 @@ void rotate_piece_clockwise(void) {
     redraw_piece();
 }
 
-void rotate_piece_counter_clockwise(void) {
+void rotate_piece_counter_clockwise(void){
     int temp = rotation;
     rotation--;
     if (rotation < 0) rotation += 4;
@@ -306,10 +349,10 @@ void rotate_piece_counter_clockwise(void) {
             printf("Wallkick successful counter-clockwise\n");
             rotation = temp;
             piece_pos = temp_piece_pos;
-            clear_draw_piece();  // set back to previous to clear it
+            clear_draw_piece(); // set back to previous to clear it
             rotation--;
             if (rotation < 0) rotation += 4;
-            piece_pos = new_pos;  // reapply changes to draw it
+            piece_pos = new_pos; // reapply changes to draw it
             redraw_piece();
             return;
         }
@@ -321,7 +364,7 @@ void rotate_piece_counter_clockwise(void) {
     redraw_piece();
 }
 
-void hard_drop(void) {
+void hard_drop(void){
     clear_draw_piece();
     piece_pos.x = shadow_pos.x;
     piece_pos.y = shadow_pos.y;
@@ -329,22 +372,23 @@ void hard_drop(void) {
 }
 
 void soft_drop(int framesCounter) {
-    static int SOFT_DROP_RATE = 5;  // adjust this value as you see fit
+    static int SOFT_DROP_RATE = 5; // adjust this value as you see fit
 
     if (framesCounter % SOFT_DROP_RATE == 0) {
         gravity();
     }
 }
 
-void set_shadow(void) {
+void set_shadow(void){
     shadow_pos.x = piece_pos.x;
-    for (int y = piece_pos.y; y < ROW + 4; y++) {
-        for (int i = 0; i < MAX_PIECE_SIZE; i++) {      // For every row
-            for (int j = 0; j < MAX_PIECE_SIZE; j++) {  // For every column
-                if (tetrominoes[piece][rotation][i][j] == piece && board[y + i][j + piece_pos.x] != EMPTY &&
-                        board[y + i][j + piece_pos.x] != FLOATING ||
-                    (tetrominoes[piece][rotation][i][j] == piece && y + i >= ROW + 4)) {
-                    shadow_pos.y = y - 1;
+    for (int y = piece_pos.y; y < ROW + BOARD_START_POS_Y; y++){
+        for (int i = 0; i < MAX_PIECE_SIZE; i++){ // For every row
+            for (int j = 0; j < MAX_PIECE_SIZE; j++){ // For every column
+                if (tetrominoes[piece][rotation][i][j] == piece &&
+                board[y + i][j + piece_pos.x] != EMPTY &&
+                board[y + i][j + piece_pos.x] != FLOATING ||
+                (tetrominoes[piece][rotation][i][j] == piece && y + i >= ROW + BOARD_START_POS_Y)){
+                    shadow_pos.y = y-1;
                     return;
                 }
             }
@@ -352,23 +396,26 @@ void set_shadow(void) {
     }
 }
 
-static void gravity(void) {
+static void gravity(void){
     // PRE: The piece currently does not collide with any placed block
     //
     // If the piece moving the piece down collides with any block,
     // piece_pos represents the coordinates of the left corner of the piece
     // printf("Attempting gravity\n");
-    for (int i = 0; i < MAX_PIECE_SIZE; i++) {      // For every row
-        for (int j = 0; j < MAX_PIECE_SIZE; j++) {  // For every column
-            if (tetrominoes[piece][rotation][i][j] == piece && board[piece_pos.y + i + 1][j + piece_pos.x] != EMPTY &&
-                    board[piece_pos.y + i + 1][j + piece_pos.x] != FLOATING ||
-                (tetrominoes[piece][rotation][i][j] == piece && piece_pos.y + i + 1 >= ROW + 4)) {
+    for (int i = 0; i < MAX_PIECE_SIZE; i++){ // For every row
+        for (int j = 0; j < MAX_PIECE_SIZE; j++){ // For every column
+            if (tetrominoes[piece][rotation][i][j] == piece &&
+                board[piece_pos.y + i + 1][j + piece_pos.x] != EMPTY &&
+                board[piece_pos.y + i + 1][j + piece_pos.x] != FLOATING ||
+                (tetrominoes[piece][rotation][i][j] == piece && piece_pos.y + i + 1 >= ROW + BOARD_START_POS_Y)
+               ){
                 set_piece();
 
                 return;
             }
         }
     }
+
 
     clear_draw_piece();
     piece_pos.y++;
@@ -399,19 +446,46 @@ void hold_piece(void) {
     }
 
     rotation = 0;
-    piece_pos.x = START_POS_X;
-    piece_pos.y = START_POS_Y;
+    piece_pos.x = PIECE_START_POS_X;
+    piece_pos.y = PIECE_START_POS_Y;
     can_hold = false;
 }
 
-bool block_is_filled(int i, int j) {
+bool block_is_filled(int i, int j){
     return board[i][j] != EMPTY;
 }
 
-static void printBoard() {
+bool is_game_over(void) {
+    for (int column = 0; column < COL; column++) {
+        // check for the line above the beginning of the board, for game over
+        switch ((Tetrominoes_type)board[BOARD_START_POS_Y - 1][column]) {
+            case EMPTY: case CLEAR: case FLOATING: continue;
+            default:
+                // if its game over, update the game state accordingly
+                if (game_state == 0) {
+                    // make end of game stats union
+                    EndOfGameStats stats = { .stats = {
+                            .level = level,
+                            .lines_cleared = lines_cleared,
+                            .score = score,
+                            .elapsed_time_integer_encoding = get_elapsed_time()
+                    } };
+
+                    // return the integer encoding
+                    game_state = stats.integer_encoding;
+                }
+
+                // return true
+                return true;
+        }
+    }
+    return false;
+}
+
+static void printBoard(){
     printf("New Board State, Current Piece: %d\n", piece);
-    for (int i = 3; i < ROW + 4; i++) {
-        for (int j = 0; j < COL; j++) {
+    for (int i = 3; i < ROW + BOARD_START_POS_Y; i++){
+        for (int j = 0; j < COL; j++){
             printf("%d", board[i][j]);
         }
         printf("     y = %d\n", i);
@@ -423,7 +497,7 @@ static TetrominoType get_next_piece() {
     const TetrominoType piece = generate_piece();
 
     // grab the next five pieces and decode
-    const FivePiecesPreview preview = {.integerEncoding = viewNextFive()};
+    const FivePiecesPreview preview = { .integerEncoding = viewNextFive() };
 
     // update the buffer appropriately
     next_five_pieces[0] = preview.pieces.first;
@@ -457,5 +531,13 @@ void handle_gravity(int frames_counter) {
         default: gravity_time = 2;
     }
 
-    if (frames_counter % gravity_time == 0) gravity();
+    if (frames_counter % gravity_time == 0)
+        gravity();
+}
+
+u64_t get_end_of_game_stats(void) {
+    // make sure its actually game over
+    assert(game_state != 0);
+
+    return game_state;
 }
