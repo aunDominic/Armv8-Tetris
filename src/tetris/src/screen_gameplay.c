@@ -38,8 +38,6 @@ static bool cancelDASOnDirectionChange = false;
 static int framesCounter = 0;
 static int finishScreen = 0;
 
-static Rectangle player1 = { 200, 200, BLOCK_SIZE, BLOCK_SIZE };
-
 // Variables to keep track of the state
 static int leftKeyFrames = 0;
 static int rightKeyFrames = 0;
@@ -93,19 +91,6 @@ void InitGameplayScreen(void)
 // Gameplay Screen Update logic
 void UpdateGameplayScreen(void)
 {
-    // TODO: Update GAMEPLAY screen variables here!
-    // // Press enter or tap to change to ENDING screen
-    // if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
-    // {
-    //     finishScreen = 1;
-    //     PlaySound(fxCoin);
-    // }
-
-    if (IsKeyDown(KEY_S)) player1.y += 3.0f;
-    else if (IsKeyDown(KEY_W)) player1.y -= 3.0f;
-    if (IsKeyDown(KEY_D)) player1.x += 3.0f;
-    else if (IsKeyDown(KEY_A)) player1.x -= 3.0f;
-
     handle_gravity(framesCounter); // handle gravity
 
     HandleInput(framesCounter);
@@ -282,25 +267,6 @@ int FinishGameplayScreen(void)
     return is_game_over();
 }
 
-// only soft_drop needs the framesCounter
-// void HandleInput(int framesCounter) {
-//     if (IsKeyPressed(KEY_LEFT)) move_piece_left();
-//     if (IsKeyPressed(KEY_RIGHT)) move_piece_right();
-//     if (IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_X)) rotate_piece_clockwise();
-//     if (IsKeyPressed(KEY_Z)) rotate_piece_counter_clockwise();
-//     if (IsKeyPressed(KEY_DOWN)) {
-//         soft_drop(framesCounter);
-//     } else if (IsKeyPressed(KEY_SPACE)) {
-//         hard_drop();
-//     }
-//
-//     if (IsKeyPressed(KEY_C)) {
-//         hold_piece();
-//     }
-//
-//     if (IsKeyPressed(KEY_R)) init_board();
-// }
-
 void HandleInput(int framesCounter) {
     // Handle left movement
     if (IsKeyPressed(KEY_LEFT)) {
@@ -314,11 +280,7 @@ void HandleInput(int framesCounter) {
             leftKeyFrames++;
             if (leftKeyFrames >= DAS) {
                 dasActive = true;
-                if (ARR == 0) {
-                    for (int i = 0; i < 10; i++) {
-                        move_piece_left();
-                    }
-                } else if ((leftKeyFrames - DAS) % ARR == 0) {
+                if ((leftKeyFrames - DAS) % ARR == 0) {
                     move_piece_left();
                 }
             }
@@ -380,10 +342,6 @@ void HandleInput(int framesCounter) {
     if (IsKeyPressed(KEY_C)) {
         hold_piece();
     }
-
-//    if (IsKeyPressed(KEY_R)) {
-//        init_board();
-//    }
 }
 
 static void DrawPiece(
