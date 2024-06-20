@@ -32,7 +32,7 @@
 // DEFINITIONS for DAS MOVEMENT
 // Constants for ARR and DAS
 // Adjust ARR, DAS, cancelDASOnDirectionChange as you see fit
-#define ARR 0 // Automatic Repeat Rate in frames
+#define ARR 3 // Automatic Repeat Rate in frames
 #define DAS 9 // Delayed Auto Shift in frames
 
 // Render textures for the UI elements
