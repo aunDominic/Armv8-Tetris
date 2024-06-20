@@ -13,24 +13,11 @@
 //----------------------------------------------------------------------------------
 // Module Variables Definition (local)
 //----------------------------------------------------------------------------------
-static int framesCounter = 0;
-static int finishScreen = 0;
-
 #define BLOCK_SIZE 20
 #define LIGHTBLUE CLITERAL(Color){0, 229, 255, 255}
 #define JBLUE CLITERAL(Color){0, 38, 255, 255}
 #define LIMEGREEN CLITERAL(Color){55, 255, 0, 255}
 #define SHADOW CLITERAL(Color){51, 51, 51, 150}
-
-// offsets for drawing the hold piece
-#define HOLD_PIECE_OFFSET_X ((-TETROMINO_SIZE_X - 1) * BLOCK_SIZE)
-#define HOLD_PIECE_OFFSET_Y (4 * BLOCK_SIZE)
-
-// offsets for drawing the next 5 pieces
-#define NEXT_FIVE_OFFSET_X ((COL + 1) * BLOCK_SIZE)
-#define NEXT_FIVE_OFFSET_Y (4 * BLOCK_SIZE)
-
-static Rectangle player1 = { 200, 200, BLOCK_SIZE, BLOCK_SIZE };
 
 // DEFINITIONS for DAS MOVEMENT
 // Constants for ARR and DAS
@@ -38,8 +25,20 @@ static Rectangle player1 = { 200, 200, BLOCK_SIZE, BLOCK_SIZE };
 #define ARR 4  // Automatic Repeat Rate in frames
 #define DAS 9 // Delayed Auto Shift in frames
 
+// Render textures for the UI elements
+static RenderTexture2D boardTexture = { 0 };
+static RenderTexture2D nextFiveTexture = { 0 };
+static RenderTexture2D holdPieceTexture = { 0 };
+static RenderTexture2D scoreLevelLinesTexture = { 0 };
+static RenderTexture2D timerTexture = { 0 };
+
 // Boolean to control whether DAS should be canceled when changing directions
 static bool cancelDASOnDirectionChange = false;
+
+static int framesCounter = 0;
+static int finishScreen = 0;
+
+static Rectangle player1 = { 200, 200, BLOCK_SIZE, BLOCK_SIZE };
 
 // Variables to keep track of the state
 static int leftKeyFrames = 0;
@@ -49,14 +48,14 @@ static bool rightKeyHeld = false;
 static bool dasActive = false;
 
 Color tetr_colors[8] = {
-    BLACK,
-    YELLOW,
-    LIGHTBLUE,
-    LIMEGREEN,
-    RED,
-    ORANGE,
-    JBLUE,
-    PURPLE,
+        BLACK,
+        YELLOW,
+        LIGHTBLUE,
+        LIMEGREEN,
+        RED,
+        ORANGE,
+        JBLUE,
+        PURPLE,
 };
 
 //----------------------------------------------------------------------------------
@@ -74,11 +73,17 @@ static void DrawPiece(int posX, int posY, TetrominoType tetrominoType, Tetromino
 //----------------------------------------------------------------------------------
 // Gameplay Screen Functions Definition
 //----------------------------------------------------------------------------------
-void DrawBoard(void);
 
 // Gameplay Screen Initialization logic
 void InitGameplayScreen(void)
 {
+    // load render textures
+    boardTexture = LoadRenderTexture(COL * BLOCK_SIZE, (ROW + BOARD_START_POS_Y) * BLOCK_SIZE);
+    nextFiveTexture = LoadRenderTexture(TETROMINO_SIZE_X * BLOCK_SIZE, 5 * TETROMINO_SIZE_Y * BLOCK_SIZE);
+    holdPieceTexture = LoadRenderTexture(TETROMINO_SIZE_X * BLOCK_SIZE, TETROMINO_SIZE_Y * BLOCK_SIZE);
+    scoreLevelLinesTexture = LoadRenderTexture(COL * BLOCK_SIZE, 90);
+    timerTexture = LoadRenderTexture(COL * BLOCK_SIZE, 30);
+
     // TODO: Initialize GAMEPLAY screen variables here!
     framesCounter = 0;
     finishScreen = 0;
@@ -112,79 +117,12 @@ void UpdateGameplayScreen(void)
 // Gameplay Screen Draw logic
 void DrawGameplayScreen(void)
 {
-    // TODO: Draw GAMEPLAY screen here!
-    // DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), PURPLE);
-    // Vector2 pos = { 20, 10 };
-    // DrawTextEx(font, "GAMEPLAY SCREEN", pos, font.baseSize*3.0f, 4, MAROON);
-    // DrawText("PRESS ENTER or TAP to JUMP to ENDING SCREEN", 130, 220, 20, MAROON);
-
-    static Camera2D camera = { 0 };
-    camera.target = (Vector2){ player1.x, player1.y };
-    camera.offset = (Vector2){ 200.0f, 200.0f };
-    camera.rotation = 0.0f;
-    camera.zoom = 1.0f;
-
-    static RenderTexture screenCamera;
-    static bool isRenderTextureLoaded = false;
-
-    if (!isRenderTextureLoaded) {
-        screenCamera = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
-        isRenderTextureLoaded = true;
-    }
-
-    Rectangle screenRec = { 0.0f, 0.0f, (float)screenCamera.texture.width, (float)-screenCamera.texture.height };
-
-    BeginTextureMode(screenCamera);
+    // Draw the board to texture
+    //---------------------------------------------------------
+    BeginTextureMode(boardTexture);
     ClearBackground(RAYWHITE);
 
-    BeginMode2D(camera);
-    // Draw full scene with first camera
-
-    // Draw timer
-    ElapsedTime elapsedTime = { .integer_encoding = get_elapsed_time() };
-    DrawText(TextFormat("TIME: %02d:%02d:%02d", elapsedTime.time.hours, elapsedTime.time.minutes, elapsedTime.time.seconds),
-             0, -120, 20, BLACK);
-
-    // Draw stats
-    DrawText(TextFormat("SCORE: %u", score), 0, -90, 20, BLACK);
-    DrawText(TextFormat("LINES CLEARED: %u", lines_cleared), 0, -60, 20, BLACK);
-    DrawText(TextFormat("LEVEL: %u", level), 0, -30, 20, BLACK);
-
-    // DRAW HOLD PIECE
-    if (!can_hold) {
-        // if can't hold, draw hold piece with opacity = 33.33%
-        const float opacity = 33.33;
-        const Color currentPieceColor = tetr_colors[hold_piece_buffer];
-        DrawPiece(HOLD_PIECE_OFFSET_X,
-        HOLD_PIECE_OFFSET_Y,
-            hold_piece_buffer,
-            0, // default rotation upright
-            BLOCK_SIZE,
-            (Color){
-                .r = currentPieceColor.r,
-                .g = currentPieceColor.g,
-                .b = currentPieceColor.b,
-                .a = (unsigned char)(opacity / 100 * (float)currentPieceColor.a) });
-    } else { // otherwise, draw hold piece with opacity = 100%
-        DrawPiece(HOLD_PIECE_OFFSET_X,
-        HOLD_PIECE_OFFSET_Y,
-            hold_piece_buffer,
-            0, // default rotation upright
-            BLOCK_SIZE,
-            tetr_colors[hold_piece_buffer]);
-    }
-
-    // DRAW NEXT 5 PIECES
-    for (int i = 0; i < 5; i++) {
-        DrawPiece(NEXT_FIVE_OFFSET_X,
-            NEXT_FIVE_OFFSET_Y + i * TETROMINO_SIZE_Y * BLOCK_SIZE,
-            next_five_pieces[i],
-            0, // default rotation upright
-            BLOCK_SIZE,
-            tetr_colors[next_five_pieces[i]]);
-    }
-
-    // DRAW BLOCKS
+    // draw blocks
     for (int i = 0; i < ROW + BOARD_START_POS_Y; i++) {
         for (int j = 0; j < COL; j++) { // X coordinates, col number??
             if (board[i][j] == FLOATING)
@@ -193,7 +131,8 @@ void DrawGameplayScreen(void)
                 DrawRectangle(BLOCK_SIZE * j, BLOCK_SIZE * i, BLOCK_SIZE, BLOCK_SIZE, tetr_colors[board[i][j]]);
         }
     }
-    // DRAW SHADOWS
+
+    // draw shadows
     for (int i = 0; i < MAX_PIECE_SIZE; i++) {
         for (int j = 0; j < MAX_PIECE_SIZE; j++) {
             int xcord = shadow_pos.x + j;
@@ -203,28 +142,138 @@ void DrawGameplayScreen(void)
         }
     }
 
-    // DRAW GRID LINES
+    // draw grid lines
     for (int i = 0; i < COL + 1; i++) {
         DrawLineV((Vector2){(float)BLOCK_SIZE * i, BLOCK_SIZE * 4}, (Vector2){ (float)BLOCK_SIZE * i, (float)BLOCK_SIZE * (ROW + BOARD_START_POS_Y)}, LIGHTGRAY);
     }
     for (int i = BOARD_START_POS_Y; i < ROW + BOARD_START_POS_Y + 1; i++) {
         DrawLineV((Vector2){0, (float)BLOCK_SIZE * i}, (Vector2){(float)BLOCK_SIZE * COL, (float)BLOCK_SIZE * i}, LIGHTGRAY);
     }
-    EndMode2D();
     EndTextureMode();
 
-    DrawTextureRec(screenCamera.texture, screenRec, (Vector2){ 0, 0 }, WHITE);
-}
+    // Draw the "next five pieces" UI element to texture
+    //---------------------------------------------------------
+    BeginTextureMode(nextFiveTexture);
+    ClearBackground(RAYWHITE);
 
-// // Call this function when you are done with the render texture
-// void UnloadGameplayResources(void) {
-//     UnloadRenderTexture(screenCamera);
-// }
+    for (int i = 0; i < 5; i++) {
+        DrawPiece(0,i * TETROMINO_SIZE_Y * BLOCK_SIZE,
+            next_five_pieces[i],
+            0, // default rotation upright
+            BLOCK_SIZE,
+            tetr_colors[next_five_pieces[i]]);
+    }
+    EndTextureMode();
+
+    // Draw the "hold piece" UI element to texture
+    //---------------------------------------------------------
+    BeginTextureMode(holdPieceTexture);
+    ClearBackground(RAYWHITE);
+
+    if (!can_hold) {
+        // if can't hold, draw hold piece with opacity = 33.33%
+        const float opacity = 33.33f;
+        const Color currentPieceColor = tetr_colors[hold_piece_buffer];
+        DrawPiece(0, 0,
+            hold_piece_buffer,
+            0, // default rotation upright
+            BLOCK_SIZE,
+            (Color){
+                .r = currentPieceColor.r,
+                .g = currentPieceColor.g,
+                .b = currentPieceColor.b,
+                .a = (unsigned char)(opacity / 100 * (float)currentPieceColor.a) });
+    } else { // otherwise, draw hold piece with opacity = 100%
+        DrawPiece(0, 0,
+            hold_piece_buffer,
+            0, // default rotation upright
+            BLOCK_SIZE,
+            tetr_colors[hold_piece_buffer]);
+    }
+    EndTextureMode();
+
+    // Draw the score, level, and lines cleared to texture
+    //---------------------------------------------------------
+    BeginTextureMode(scoreLevelLinesTexture);
+    ClearBackground(RAYWHITE);
+
+    DrawText(TextFormat("SCORE: %u", score), 0, 0, 20, BLACK);
+    DrawText(TextFormat("LINES CLEARED: %u", lines_cleared), 0, 30, 20, BLACK);
+    DrawText(TextFormat("LEVEL: %u", level), 0, 60, 20, BLACK);
+    EndTextureMode();
+
+    // Draw the "timer" UI element to texture
+    //---------------------------------------------------------
+    BeginTextureMode(timerTexture);
+    ClearBackground(RAYWHITE);
+
+    ElapsedTime elapsedTime = { .integer_encoding = get_elapsed_time() };
+    DrawText(TextFormat("TIME: %02d:%02d:%02d", elapsedTime.time.hours, elapsedTime.time.minutes, elapsedTime.time.seconds),
+             0, 0, 20, BLACK);
+    EndTextureMode();
+
+    // Draw textures to screen, positioning them into a cohesive UI
+    //---------------------------------------------------------
+    DrawTextureRec(
+            boardTexture.texture,
+            (Rectangle){
+                    .width = (float)boardTexture.texture.width,
+                    .height = (float)-boardTexture.texture.height },
+            (Vector2){
+                .x = (float)holdPieceTexture.texture.width,
+                .y = 0 },
+            WHITE);
+
+    DrawTextureRec(
+            nextFiveTexture.texture,
+            (Rectangle){
+                    .width = (float)nextFiveTexture.texture.width,
+                    .height = (float)-nextFiveTexture.texture.height },
+            (Vector2){
+                .x = (float)(holdPieceTexture.texture.width + boardTexture.texture.width),
+                .y = BOARD_START_POS_Y * BLOCK_SIZE },
+            WHITE);
+
+    DrawTextureRec(
+            holdPieceTexture.texture,
+            (Rectangle){
+                    .width = (float)holdPieceTexture.texture.width,
+                    .height = (float)-holdPieceTexture.texture.height },
+            (Vector2){
+                    .x = 0,
+                    .y = BOARD_START_POS_Y * BLOCK_SIZE },
+            WHITE);
+
+    DrawTextureRec(
+            scoreLevelLinesTexture.texture,
+            (Rectangle){
+                    .width = (float)scoreLevelLinesTexture.texture.width,
+                    .height = (float)-scoreLevelLinesTexture.texture.height },
+            (Vector2){
+                    .x = (float)holdPieceTexture.texture.width,
+                    .y = (float)boardTexture.texture.height },
+            WHITE);
+
+    DrawTextureRec(
+            timerTexture.texture,
+            (Rectangle){
+                    .width = (float)timerTexture.texture.width,
+                    .height = (float)-timerTexture.texture.height },
+            (Vector2){
+                    .x = (float)holdPieceTexture.texture.width,
+                    .y = (float)(boardTexture.texture.height + scoreLevelLinesTexture.texture.height) },
+            WHITE);
+}
 
 // Gameplay Screen Unload logic
 void UnloadGameplayScreen(void)
 {
-    // TODO: Unload GAMEPLAY screen variables here!
+    // unload textures
+    UnloadRenderTexture(boardTexture);
+    UnloadRenderTexture(nextFiveTexture);
+    UnloadRenderTexture(holdPieceTexture);
+    UnloadRenderTexture(scoreLevelLinesTexture);
+    UnloadRenderTexture(timerTexture);
 }
 
 // Gameplay Screen should finish?
@@ -351,10 +400,10 @@ static void DrawPiece(
             if (tetrominoes[(int)tetrominoType][tetrominoRotation][y][x] == TETROMINO_EMPTY) continue;
 
             DrawRectangle(
-                posX + x * blockSize,
-                posY + y * blockSize,
-                blockSize,
-                blockSize,
-                color);
+                    posX + x * blockSize,
+                    posY + y * blockSize,
+                    blockSize,
+                    blockSize,
+                    color);
         }
 }
