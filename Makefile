@@ -1,6 +1,6 @@
 # NEW FILE STUFF FOR TESTING
 
-CC = gcc
+CC = cc
 CFLAGS = -Wall -Wextra -g3
 
 # Define the targets
@@ -59,6 +59,9 @@ clean:
 # Include the .d makefiles
 -include $(EMULATE_DEPS)
 -include $(ASSEMBLE_DEPS)
+
+format:
+	find . -name '*.c' | xargs clang-format -i
 
 # Cppcheck target
 .PHONY: cppcheck

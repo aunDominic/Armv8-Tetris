@@ -3,13 +3,15 @@
 //
 
 #include "opcode_table.h"
-#include "common_types.h"
+
 #include <stddef.h>
+
+#include "common_types.h"
 
 SymbolTable *opcodeTable = NULL;
 
 // make sure to set this to opcodeTable in main()
-SymbolTable* createOpCodeTable() {
+SymbolTable *createOpCodeTable() {
     SymbolTable *table = createSymbolTable();
     // Add opcodes to the symbol table, yes this is ugly
     // however there's no way to allocate this at compile time (to my knowledge)

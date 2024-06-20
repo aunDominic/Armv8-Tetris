@@ -81,12 +81,14 @@ void init_board(void){
     redraw_piece();
     set_shadow();
 }
-static bool is_line_filled(int line[]){
-    for (int i = 0; i < COL; i++) if (line[i] == EMPTY) return false;
+
+static bool is_line_filled(int line[]) {
+    for (int i = 0; i < COL; i++)
+        if (line[i] == EMPTY) return false;
     return true;
 }
 
-static void clear_line(int line[]){
+static void clear_line(int line[]) {
     for (int i = 0; i < COL; i++) line[i] = CLEAR;
 }
 
@@ -95,45 +97,43 @@ static void update_score(int lines) {
         case 1: score += 100 * level; break;
         case 2: score += 300 * level; break;
         case 3: score += 500 * level; break;
-        default: score += 800 * level; // tetris
+        default: score += 800 * level;  // tetris
     }
 }
 
-static void shift_lines_down(int l, int u){
-   // Naive Gravity.
-   // Lines are shifted down by exactly the number of cleared lines below them
-   // The piece is placed between the y coords [l, u], inclusive
-   // A higher y value -> a lower position on the board. The y axis points downwards, similar to how 2D Arrays are organised
+static void shift_lines_down(int l, int u) {
+    // Naive Gravity.
+    // Lines are shifted down by exactly the number of cleared lines below them
+    // The piece is placed between the y coords [l, u], inclusive
+    // A higher y value -> a lower position on the board. The y axis points downwards, similar to how 2D Arrays are
+    // organised
     assert(l <= u);
     int cnt_clear_lines = 0;
-    for (int i = u; i >= l; i--){
+    for (int i = u; i >= l; i--) {
         if (board[i][0] == CLEAR) {
             cnt_clear_lines++;
-        }
-        else if (cnt_clear_lines > 0){
-            for (int j = 0; j < COL; j++){
-                board[i+cnt_clear_lines][j] = board[i][j];
+        } else if (cnt_clear_lines > 0) {
+            for (int j = 0; j < COL; j++) {
+                board[i + cnt_clear_lines][j] = board[i][j];
                 board[i][j] = EMPTY;
             }
             printf("debug: Shifting lines down..\n");
         }
     }
-    if (cnt_clear_lines > 0)
-        update_score(cnt_clear_lines); // update score
-    lines_cleared += cnt_clear_lines; // update lines cleared
+    if (cnt_clear_lines > 0) update_score(cnt_clear_lines);  // update score
+    lines_cleared += cnt_clear_lines;                        // update lines cleared
 }
 
 // Clears the lines between the y coordinates (l, u)
 // l, u are supplied when a piece is placed.
 // is called whenever a piece is placed.
 
-
-void clear_lines(int l, int u){
-    assert(l < ROW+4 && u < ROW+4);
+void clear_lines(int l, int u) {
+    assert(l < ROW + 4 && u < ROW + 4);
     assert(l < u);
 
-    for (int i = l; i <= u; i++){
-        if (is_line_filled(board[i])){
+    for (int i = l; i <= u; i++) {
+        if (is_line_filled(board[i])) {
             printf("debug: Clearing lines...\n");
             clear_line(board[i]);
         }
@@ -143,6 +143,7 @@ void clear_lines(int l, int u){
     // update the level according to lines cleared
     level = lines_cleared / LEVEL_UP_THRESHOLD + 1;
 }
+
 // void update_piece_shadow(void){
 //     for (int i = 0 < MAX_PIECE_SIZE; i++){
 //         for (int j = 0; j < MAX_PIECE_SIZE; j++){
@@ -159,7 +160,7 @@ void set_piece(void){
             }
         }
     }
-    clear_lines(0, ROW+3);
+    clear_lines(0, ROW + 3);
 
     printf("debug: Sucessfully set piece. Piece: %d at (%d, %d)\n", piece, piece_pos.x, piece_pos.y);
 
@@ -175,19 +176,21 @@ void set_piece(void){
     printTetrominoes(piece, rotation);
     redraw_piece();
 }
-static void clear_draw_piece(void){
-    for (int i = 0; i < MAX_PIECE_SIZE; i++){ // Piece Height
-        for (int j = 0; j < MAX_PIECE_SIZE; j++){ // Piece Width
-            if (tetrominoes[piece][rotation][i][j] == piece){
+
+static void clear_draw_piece(void) {
+    for (int i = 0; i < MAX_PIECE_SIZE; i++) {      // Piece Height
+        for (int j = 0; j < MAX_PIECE_SIZE; j++) {  // Piece Width
+            if (tetrominoes[piece][rotation][i][j] == piece) {
                 board[piece_pos.y + i][j + piece_pos.x] = EMPTY;
             }
         }
     }
 }
-static void redraw_piece(void){
-    for (int i = 0; i < MAX_PIECE_SIZE; i++){ // Piece Height
-        for (int j = 0; j < MAX_PIECE_SIZE; j++){ // Piece Width
-            if (tetrominoes[piece][rotation][i][j] == piece){
+
+static void redraw_piece(void) {
+    for (int i = 0; i < MAX_PIECE_SIZE; i++) {      // Piece Height
+        for (int j = 0; j < MAX_PIECE_SIZE; j++) {  // Piece Width
+            if (tetrominoes[piece][rotation][i][j] == piece) {
                 board[piece_pos.y + i][j + piece_pos.x] = FLOATING;
             }
         }
@@ -210,9 +213,10 @@ static bool is_valid_orientation(void){
     }
     return true;
 }
-void move_piece_left(void){
+
+void move_piece_left(void) {
     piece_pos.x--;
-    if (!is_valid_orientation()){
+    if (!is_valid_orientation()) {
         piece_pos.x++;
         return;
     }
@@ -221,9 +225,10 @@ void move_piece_left(void){
     piece_pos.x--;
     redraw_piece();
 }
-void move_piece_right(void){
+
+void move_piece_right(void) {
     piece_pos.x++;
-    if (!is_valid_orientation()){
+    if (!is_valid_orientation()) {
         piece_pos.x--;
         return;
     }
@@ -233,7 +238,7 @@ void move_piece_right(void){
     redraw_piece();
 }
 
-void rotate_piece_clockwise(void){
+void rotate_piece_clockwise(void) {
     int temp = rotation;
     rotation = (rotation + 1) % 4;
     pair temp_piece_pos = piece_pos;
@@ -241,7 +246,8 @@ void rotate_piece_clockwise(void){
     if (is_valid_orientation()) {
         rotation = temp;
         clear_draw_piece();
-        rotation++; rotation %= 4;
+        rotation++;
+        rotation %= 4;
         redraw_piece();
         return;
     }
@@ -259,10 +265,10 @@ void rotate_piece_clockwise(void){
             printf("Wallkick successful clockwise\n");
             rotation = temp;
             piece_pos = temp_piece_pos;
-            clear_draw_piece(); // reset position so we can clear it
+            clear_draw_piece();  // reset position so we can clear it
             rotation = (rotation + 1) % 4;
             piece_pos = new_pos;
-            redraw_piece(); // apply the new thing so we can redraw
+            redraw_piece();  // apply the new thing so we can redraw
             return;
         }
     }
@@ -273,7 +279,7 @@ void rotate_piece_clockwise(void){
     redraw_piece();
 }
 
-void rotate_piece_counter_clockwise(void){
+void rotate_piece_counter_clockwise(void) {
     int temp = rotation;
     rotation--;
     if (rotation < 0) rotation += 4;
@@ -300,10 +306,10 @@ void rotate_piece_counter_clockwise(void){
             printf("Wallkick successful counter-clockwise\n");
             rotation = temp;
             piece_pos = temp_piece_pos;
-            clear_draw_piece(); // set back to previous to clear it
+            clear_draw_piece();  // set back to previous to clear it
             rotation--;
             if (rotation < 0) rotation += 4;
-            piece_pos = new_pos; // reapply changes to draw it
+            piece_pos = new_pos;  // reapply changes to draw it
             redraw_piece();
             return;
         }
@@ -315,7 +321,7 @@ void rotate_piece_counter_clockwise(void){
     redraw_piece();
 }
 
-void hard_drop(void){
+void hard_drop(void) {
     clear_draw_piece();
     piece_pos.x = shadow_pos.x;
     piece_pos.y = shadow_pos.y;
@@ -323,23 +329,22 @@ void hard_drop(void){
 }
 
 void soft_drop(int framesCounter) {
-    static int SOFT_DROP_RATE = 5; // adjust this value as you see fit
+    static int SOFT_DROP_RATE = 5;  // adjust this value as you see fit
 
     if (framesCounter % SOFT_DROP_RATE == 0) {
         gravity();
     }
 }
 
-void set_shadow(void){
+void set_shadow(void) {
     shadow_pos.x = piece_pos.x;
-    for (int y = piece_pos.y; y < ROW + 4; y++){
-        for (int i = 0; i < MAX_PIECE_SIZE; i++){ // For every row
-            for (int j = 0; j < MAX_PIECE_SIZE; j++){ // For every column
-                if (tetrominoes[piece][rotation][i][j] == piece &&
-                board[y + i][j + piece_pos.x] != EMPTY &&
-                board[y + i][j + piece_pos.x] != FLOATING ||
-                (tetrominoes[piece][rotation][i][j] == piece && y + i >= ROW + 4)){
-                    shadow_pos.y = y-1;
+    for (int y = piece_pos.y; y < ROW + 4; y++) {
+        for (int i = 0; i < MAX_PIECE_SIZE; i++) {      // For every row
+            for (int j = 0; j < MAX_PIECE_SIZE; j++) {  // For every column
+                if (tetrominoes[piece][rotation][i][j] == piece && board[y + i][j + piece_pos.x] != EMPTY &&
+                        board[y + i][j + piece_pos.x] != FLOATING ||
+                    (tetrominoes[piece][rotation][i][j] == piece && y + i >= ROW + 4)) {
+                    shadow_pos.y = y - 1;
                     return;
                 }
             }
@@ -347,26 +352,23 @@ void set_shadow(void){
     }
 }
 
-static void gravity(void){
+static void gravity(void) {
     // PRE: The piece currently does not collide with any placed block
     //
     // If the piece moving the piece down collides with any block,
     // piece_pos represents the coordinates of the left corner of the piece
     // printf("Attempting gravity\n");
-    for (int i = 0; i < MAX_PIECE_SIZE; i++){ // For every row
-        for (int j = 0; j < MAX_PIECE_SIZE; j++){ // For every column
-            if (tetrominoes[piece][rotation][i][j] == piece &&
-                board[piece_pos.y + i + 1][j + piece_pos.x] != EMPTY &&
-                board[piece_pos.y + i + 1][j + piece_pos.x] != FLOATING ||
-                (tetrominoes[piece][rotation][i][j] == piece && piece_pos.y + i + 1 >= ROW + 4)
-               ){
+    for (int i = 0; i < MAX_PIECE_SIZE; i++) {      // For every row
+        for (int j = 0; j < MAX_PIECE_SIZE; j++) {  // For every column
+            if (tetrominoes[piece][rotation][i][j] == piece && board[piece_pos.y + i + 1][j + piece_pos.x] != EMPTY &&
+                    board[piece_pos.y + i + 1][j + piece_pos.x] != FLOATING ||
+                (tetrominoes[piece][rotation][i][j] == piece && piece_pos.y + i + 1 >= ROW + 4)) {
                 set_piece();
 
                 return;
             }
         }
     }
-
 
     clear_draw_piece();
     piece_pos.y++;
@@ -402,14 +404,14 @@ void hold_piece(void) {
     can_hold = false;
 }
 
-bool block_is_filled(int i, int j){
+bool block_is_filled(int i, int j) {
     return board[i][j] != EMPTY;
 }
 
-static void printBoard(){
+static void printBoard() {
     printf("New Board State, Current Piece: %d\n", piece);
-    for (int i = 3; i < ROW + 4; i++){
-        for (int j = 0; j < COL; j++){
+    for (int i = 3; i < ROW + 4; i++) {
+        for (int j = 0; j < COL; j++) {
             printf("%d", board[i][j]);
         }
         printf("     y = %d\n", i);
@@ -421,7 +423,7 @@ static TetrominoType get_next_piece() {
     const TetrominoType piece = generate_piece();
 
     // grab the next five pieces and decode
-    const FivePiecesPreview preview = { .integerEncoding = viewNextFive() };
+    const FivePiecesPreview preview = {.integerEncoding = viewNextFive()};
 
     // update the buffer appropriately
     next_five_pieces[0] = preview.pieces.first;
@@ -455,6 +457,5 @@ void handle_gravity(int frames_counter) {
         default: gravity_time = 2;
     }
 
-    if (frames_counter % gravity_time == 0)
-        gravity();
+    if (frames_counter % gravity_time == 0) gravity();
 }

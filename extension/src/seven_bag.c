@@ -91,4 +91,3 @@ TetrominoType drawFromBag() {
     // return the value
     return returnValue;
 }
-
