@@ -1,27 +1,29 @@
 #include <assert.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
-#include "symbol_table.h"
+#include "common_types.h"
 #include "line_reader.h"
 #include "opcode_table.h"
-#include "common_types.h"
+#include "symbol_table.h"
+#include "../debug.h"
 
 static uint32_t lineNumber(const uint32_t address) {
     return address / INST_SIZE;
 }
 
 int main(const int argc, const char **argv) {
-
     // VERY IMPORTANT TO INITIALIZE THESE
-    symbol_table = createSymbolTable(); // handles labels
+    symbol_table = createSymbolTable();  // handles labels
     opcodeTable = createOpCodeTable();
 
     FILE *inputFile, *outputFile;
     if (argc != 3) {
-        perror("Invalid command line arguments. Should be ./assemble add01.s add01.bin\n");
+        perror(
+            "Invalid command line arguments. Should be ./assemble add01.s "
+            "add01.bin\n");
         return EXIT_FAILURE;
     }
 
@@ -36,14 +38,13 @@ int main(const int argc, const char **argv) {
         return EXIT_FAILURE;
     }
 
-
     // FIRST PASS STRUCTURE
     // reads file line by line
     // address is just line number times 4
     // for each line, check if its a label definition
     // then adds to symbol table
 
-    char buffer[MAX_LENGTH]; // defined in common_types.h
+    char buffer[MAX_LENGTH];  // defined in common_types.h
     uint32_t address = 0;
     while (fgets(buffer, sizeof(buffer), inputFile) != NULL) {
         // fgets stores '\n' so turns this into a NULL_CHAR as we don't want this
@@ -52,7 +53,6 @@ int main(const int argc, const char **argv) {
         if (strlen(buffer) > 0) {
             // non-empty line
             if (is_label(buffer)) {
-
                 // first remove the colon at the end of buffer for labels
                 const char *pos = strchr(buffer, ':');
                 buffer[pos - buffer] = NULL_CHAR;
@@ -62,7 +62,6 @@ int main(const int argc, const char **argv) {
             }
         }
     }
-
 
     // SECOND PASS
     // total amount of instructions that we need to output
@@ -74,7 +73,7 @@ int main(const int argc, const char **argv) {
     INST instructions[instructionAmount] = {};
 
     // reset these variables for 2nd pass
-    rewind(inputFile); // move file pointer back to start
+    rewind(inputFile);  // move file pointer back to start
     address = 0;
     while (fgets(buffer, sizeof(buffer), inputFile) != NULL) {
         // fgets stores '\n' so turns this into a NULL_CHAR as we don't want this
@@ -92,7 +91,6 @@ int main(const int argc, const char **argv) {
         }
     }
 
-
     size_t noElementsWritten = fwrite(instructions, sizeof(INST), instructionAmount, outputFile);
     assert(noElementsWritten == instructionAmount);
 
@@ -101,6 +99,5 @@ int main(const int argc, const char **argv) {
     freeSymbolTable(opcodeTable);
     fclose(inputFile);
     fclose(outputFile);
-    printf("Assemble running \n");
     return EXIT_SUCCESS;
 }

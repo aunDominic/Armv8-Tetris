@@ -3,40 +3,40 @@
 //
 
 #include "memory.h"
-#include <stdbool.h>
-#include <stdlib.h>
+#include "../debug.h"
 #include <assert.h>
-#include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 // Zero register is set at the beginning
-struct PSTATE pstate = {
-        true, false, false, false
-};
+struct PSTATE pstate = {true, false, false, false};
 // 64-bit number to represent which bits are set
 // Use bitmasks to query the registers
 int64_t registers[31] = {0};
 int64_t programCounter = 0;
 int64_t zeroRegister = 0;
 BYTE memory[memSize] = {0};
-const int32_t HALT =  0x8a000000;
-void printMemory(int start, int end){
-    for (int i = start; i < end; i++){
-        printf("Address %d: %x\n", i, memory[i]);
+const int32_t HALT = 0x8a000000;
+
+void printMemory(int start, int end) {
+    for (int i = start; i < end; i++) {
+        PRINT("Address %d: %x\n", i, memory[i]);
     }
 }
-void printRegisters(){
+
+void printRegisters() {
     for (int i = 0; i < regCount; i++) {
-        printf("Register %d: %ld\n", i, registers[i]);
+        PRINT("Register %d: %ld\n", i, registers[i]);
     }
-
-
 }
-INST getInstAtAddr(int addr){
-    assert(addr <= (memSize - 4) &&  "Error: Memory address out of bounds."); // ideally we have a macro for 1 << 21 or 21
+
+INST getInstAtAddr(int addr) {
+    assert(addr <= (memSize - 4) &&
+           "Error: Memory address out of bounds.");  // ideally we have a macro for 1 << 21 or 21
     BYTE byte1 = memory[addr];
-    BYTE byte2 = memory[addr+1];
-    BYTE byte3 = memory[addr+2];
-    BYTE byte4 = memory[addr+3];
+    BYTE byte2 = memory[addr + 1];
+    BYTE byte3 = memory[addr + 2];
+    BYTE byte4 = memory[addr + 3];
 
     // default implementation is just to interpret these as is
     // ie default is little-endian
@@ -48,6 +48,7 @@ INST getInstAtAddr(int addr){
     instruction |= byte1;
     return instruction;
 }
+
 INST fetch() {
     return getInstAtAddr(programCounter);
 }

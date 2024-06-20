@@ -32,13 +32,13 @@ static int finishScreen = 0;
 #define NEXT_FIVE_OFFSET_X ((COL + 1) * BLOCK_SIZE)
 #define NEXT_FIVE_OFFSET_Y (4 * BLOCK_SIZE)
 
-static Rectangle player1 = { 200, 200, BLOCK_SIZE, BLOCK_SIZE };
+static Rectangle player1 = {200, 200, BLOCK_SIZE, BLOCK_SIZE};
 
 // DEFINITIONS for DAS MOVEMENT
 // Constants for ARR and DAS
 // Adjust ARR, DAS, cancelDASOnDirectionChange as you see fit
 #define ARR 4  // Automatic Repeat Rate in frames
-#define DAS 9 // Delayed Auto Shift in frames
+#define DAS 9  // Delayed Auto Shift in frames
 
 // Boolean to control whether DAS should be canceled when changing directions
 static bool cancelDASOnDirectionChange = false;
@@ -79,8 +79,7 @@ void DrawPiece(int posX, int posY, TetrominoType piece, TetrominoRotation rotati
 void DrawBoard(void);
 
 // Gameplay Screen Initialization logic
-void InitGameplayScreen(void)
-{
+void InitGameplayScreen(void) {
     // TODO: Initialize GAMEPLAY screen variables here!
     framesCounter = 0;
     finishScreen = 0;
@@ -88,8 +87,7 @@ void InitGameplayScreen(void)
 }
 
 // Gameplay Screen Update logic
-void UpdateGameplayScreen(void)
-{
+void UpdateGameplayScreen(void) {
     // TODO: Update GAMEPLAY screen variables here!
     // // Press enter or tap to change to ENDING screen
     // if (IsKeyPressed(KEY_ENTER) || IsGestureDetected(GESTURE_TAP))
@@ -98,12 +96,16 @@ void UpdateGameplayScreen(void)
     //     PlaySound(fxCoin);
     // }
 
-    if (IsKeyDown(KEY_S)) player1.y += 3.0f;
-    else if (IsKeyDown(KEY_W)) player1.y -= 3.0f;
-    if (IsKeyDown(KEY_D)) player1.x += 3.0f;
-    else if (IsKeyDown(KEY_A)) player1.x -= 3.0f;
+    if (IsKeyDown(KEY_S))
+        player1.y += 3.0f;
+    else if (IsKeyDown(KEY_W))
+        player1.y -= 3.0f;
+    if (IsKeyDown(KEY_D))
+        player1.x += 3.0f;
+    else if (IsKeyDown(KEY_A))
+        player1.x -= 3.0f;
 
-    handle_gravity(framesCounter); // handle gravity
+    handle_gravity(framesCounter);  // handle gravity
 
     HandleInput(framesCounter);
     framesCounter++;
@@ -112,17 +114,16 @@ void UpdateGameplayScreen(void)
 }
 
 // Gameplay Screen Draw logic
-void DrawGameplayScreen(void)
-{
+void DrawGameplayScreen(void) {
     // TODO: Draw GAMEPLAY screen here!
     // DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), PURPLE);
     // Vector2 pos = { 20, 10 };
     // DrawTextEx(font, "GAMEPLAY SCREEN", pos, font.baseSize*3.0f, 4, MAROON);
     // DrawText("PRESS ENTER or TAP to JUMP to ENDING SCREEN", 130, 220, 20, MAROON);
 
-    static Camera2D camera = { 0 };
-    camera.target = (Vector2){ player1.x, player1.y };
-    camera.offset = (Vector2){ 200.0f, 200.0f };
+    static Camera2D camera = {0};
+    camera.target = (Vector2){player1.x, player1.y};
+    camera.offset = (Vector2){200.0f, 200.0f};
     camera.rotation = 0.0f;
     camera.zoom = 1.0f;
 
@@ -134,7 +135,7 @@ void DrawGameplayScreen(void)
         isRenderTextureLoaded = true;
     }
 
-    Rectangle screenRec = { 0.0f, 0.0f, (float)screenCamera.texture.width, (float)-screenCamera.texture.height };
+    Rectangle screenRec = {0.0f, 0.0f, (float)screenCamera.texture.width, (float)-screenCamera.texture.height};
 
     BeginTextureMode(screenCamera);
     ClearBackground(RAYWHITE);
@@ -199,15 +200,17 @@ void DrawGameplayScreen(void)
 
     // DRAW GRID LINES
     for (int i = 0; i < COL + 1; i++) {
-        DrawLineV((Vector2){(float)BLOCK_SIZE * i, BLOCK_SIZE * 4}, (Vector2){ (float)BLOCK_SIZE * i, (float)BLOCK_SIZE * (ROW + 4)}, LIGHTGRAY);
+        DrawLineV((Vector2){(float)BLOCK_SIZE * i, BLOCK_SIZE * 4},
+                  (Vector2){(float)BLOCK_SIZE * i, (float)BLOCK_SIZE * (ROW + 4)}, LIGHTGRAY);
     }
     for (int i = 4; i < ROW + 4 + 1; i++) {
-        DrawLineV((Vector2){0, (float)BLOCK_SIZE * i}, (Vector2){(float)BLOCK_SIZE * COL, (float)BLOCK_SIZE * i}, LIGHTGRAY);
+        DrawLineV((Vector2){0, (float)BLOCK_SIZE * i}, (Vector2){(float)BLOCK_SIZE * COL, (float)BLOCK_SIZE * i},
+                  LIGHTGRAY);
     }
     EndMode2D();
     EndTextureMode();
 
-    DrawTextureRec(screenCamera.texture, screenRec, (Vector2){ 0, 0 }, WHITE);
+    DrawTextureRec(screenCamera.texture, screenRec, (Vector2){0, 0}, WHITE);
 }
 
 // // Call this function when you are done with the render texture
@@ -216,14 +219,12 @@ void DrawGameplayScreen(void)
 // }
 
 // Gameplay Screen Unload logic
-void UnloadGameplayScreen(void)
-{
+void UnloadGameplayScreen(void) {
     // TODO: Unload GAMEPLAY screen variables here!
 }
 
 // Gameplay Screen should finish?
-int FinishGameplayScreen(void)
-{
+int FinishGameplayScreen(void) {
     return finishScreen;
 }
 

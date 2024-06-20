@@ -23,7 +23,7 @@ u16_t viewNextFive() {
 }
 
 void printNextFive(const u16_t nextFive) {
-    const FivePiecesPreview preview = { .integerEncoding = nextFive };
+    const FivePiecesPreview preview = {.integerEncoding = nextFive};
 
     printf("NEXT FIVE PIECES: ");
     printf("\t1: ");
@@ -49,7 +49,7 @@ void printNextFive(const u16_t nextFive) {
 
 // Generates a new piece
 TetrominoType generate_piece() {
-    const TetrominoType piece = drawFromBag(); // choose between random_gen() vs drawFromBag();
+    const TetrominoType piece = drawFromBag();  // choose between random_gen() vs drawFromBag();
 
     // TODO: remove this later, this is for debugging
     printNextFive(viewNextFive());

@@ -5,4 +5,5 @@ project(FinalProjectY1_Emulator C)
 file(GLOB SOURCE_FILES *.c)
 file(GLOB HEADER_FILES *.h)
 
-add_executable(emulate ${SOURCE_FILES} ${HEADER_FILES})
+add_executable(emulate ${SOURCE_FILES} ${HEADER_FILES}
+		../debug.h)

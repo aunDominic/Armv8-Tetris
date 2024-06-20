@@ -2,12 +2,13 @@
 // Created by Ahmad Jamsari on 31/05/24.
 //
 
-#include <ctype.h>
-#include <string.h>
 #include "parsing_common.h"
+#include "../debug.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // used for parsing string representation of registers in assembly
 // macros need to be done like this because preprocessor does outside in
@@ -29,8 +30,7 @@ static Register reg_from_regStr(const char *strReg);
  * sometimes I might need the extra information
  */
 Register handle_register(char **remainingLine) {
-
-    while (isspace((unsigned char) **remainingLine)) {
+    while (isspace((unsigned char)**remainingLine)) {
         (*remainingLine)++;
     }
 
@@ -60,7 +60,7 @@ static Register reg_from_regStr(const char *strReg) {
     // now check for zero register
     if (strcmp(strReg + 1, "zr") == 0) {
         reg.isZeroReg = true;
-        reg.regNumber = 255; // set a value for debugging purposes
+        reg.regNumber = 255;  // set a value for debugging purposes
         return reg;
     }
 
@@ -92,7 +92,7 @@ void modify_instruction(INST *instruction, const int x, const int y, const int v
     assert(x <= y);
     int32_t num_bits = y - x + 1;
 
-    // printf("value is %u, max_val is %u\n", value, 1 << num_bits);
+    // PRINT("value is %u, max_val is %u\n", value, 1 << num_bits);
     assert(value < (1 << num_bits));
 
     // Create a mask for the bits to be modified
@@ -107,7 +107,7 @@ void modify_instruction(INST *instruction, const int x, const int y, const int v
 
 uint32_t reg_to_binary(Register reg) {
     if (reg.isZeroReg) {
-        return 31; // decimal representation of 11111
+        return 31;  // decimal representation of 11111
     }
 
     return reg.regNumber;
@@ -125,7 +125,7 @@ Shifter determineShift(char *remainingLine) {
     char *saveptr;
 
     // Skip leading whitespace
-    while (isspace((unsigned char) *remainingLine)) {
+    while (isspace((unsigned char)*remainingLine)) {
         remainingLine++;
     }
 
@@ -178,26 +178,40 @@ OpcodeType get_opcode_type(Opcode opcode) {
     OpcodeType opcodeType;
 
     switch (opcode) {
-        case ADD: case ADDS: case SUB: case SUBS:
+        case ADD:
+        case ADDS:
+        case SUB:
+        case SUBS:
             opcodeType.type = ARITHMETIC;
             opcodeType.isNegated = false;
             break;
-        case AND: case ORR: case EOR: case ANDS:
+
+        case AND:
+        case ORR:
+        case EOR:
+        case ANDS:
             opcodeType.type = BITWISE;
             opcodeType.isNegated = false;
             break;
-        case BIC: case ORN: case EON: case BICS:
+
+        case BIC:
+        case ORN:
+        case EON:
+        case BICS:
             opcodeType.type = BITWISE;
             opcodeType.isNegated = true;
             break;
+
         case MUL:
             opcodeType.type = MULTIPLY;
             opcodeType.isNegated = false;
             break;
+
         case MNEG:
             opcodeType.type = MULTIPLY;
             opcodeType.isNegated = true;
             break;
+
         default:
             fprintf(stderr, "get_opcode_type for other opcodes not available yet");
             // dummy implemenation
@@ -264,4 +278,3 @@ void transform_start(char *instruction) {
     strcat(transformed_instruction, instruction);
     strcpy(instruction, transformed_instruction);
 }
-

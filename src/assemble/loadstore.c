@@ -5,21 +5,16 @@
 #include "loadstore.h"
 
 #include <ctype.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include "parsing_common.h"
-#include "symbol_table.h"
 #include <string.h>
 
-typedef enum {
-    POST_INDEX,
-    PRE_INDEX,
-    UNSIGNED_OFFSET,
-    REGISTER_OFFSET,
-    LITERAL,
-    INVALID
-} AddressingMode;
+#include "parsing_common.h"
+#include "symbol_table.h"
+#include "../debug.h"
+
+typedef enum { POST_INDEX, PRE_INDEX, UNSIGNED_OFFSET, REGISTER_OFFSET, LITERAL, INVALID } AddressingMode;
 
 // slightly inefficient, could use unions
 // but storage is abundant so take advantage of it
@@ -52,7 +47,7 @@ static Register handle_reg_inplace(char **strReg) {
     // now check for zero register
     if (strcmp(*strReg + 1, "zr") == 0) {
         reg.isZeroReg = true;
-        reg.regNumber = 255; // set a value for debugging purposes
+        reg.regNumber = 255;  // set a value for debugging purposes
         return reg;
     }
 
@@ -72,9 +67,9 @@ void parse_addressing_mode(char *remainingLine, ParsedAddress *parsed) {
     // Parse Rt
     parsed->Rt = handle_register(&remainingLine);
 
-    // printf("remaining line 1 is %s\n", remainingLine);
+    // PRINT("remaining line 1 is %s\n", remainingLine);
 
-    while (isspace((unsigned char) *remainingLine)) {
+    while (isspace((unsigned char)*remainingLine)) {
         remainingLine++;
     }
 
@@ -103,7 +98,7 @@ void parse_addressing_mode(char *remainingLine, ParsedAddress *parsed) {
 
     // Parse Xn|SP
     parsed->Xn_SP = handle_reg_inplace(&remainingLine);
-    // printf("remaining line is %s\n", remainingLine);
+    // PRINT("remaining line is %s\n", remainingLine);
 
     // Check for closing bracket ']' for POST_INDEX
     if (*remainingLine == ']' && *(remainingLine + 1) == ',') {
@@ -111,7 +106,7 @@ void parse_addressing_mode(char *remainingLine, ParsedAddress *parsed) {
 
         // handle rest of post_index
 
-        while (isspace((unsigned char) *remainingLine) || *remainingLine == '#') {
+        while (isspace((unsigned char)*remainingLine) || *remainingLine == '#') {
             remainingLine++;
         }
 
@@ -130,7 +125,7 @@ void parse_addressing_mode(char *remainingLine, ParsedAddress *parsed) {
     // Check for unsigned offset now vs register offset vs pre-index
     if (*remainingLine == ',') {
         remainingLine++;
-        while (isspace((unsigned char) *remainingLine)) {
+        while (isspace((unsigned char)*remainingLine)) {
             remainingLine++;
         }
 
@@ -176,8 +171,8 @@ INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode) {
         modify_instruction(&instr, 27, 29, 3);
         // handle simm19 stuff
 
-        printf("parsed.literal is %d\n", parsed.literal);
-        int32_t offset = (parsed.literal - (int32_t) address) / 4;
+        PRINT("parsed.literal is %d\n", parsed.literal);
+        int32_t offset = (parsed.literal - (int32_t)address) / 4;
         modify_instruction(&instr, 5, 23, offset);
     } else {
         // one of the other modes that we need to handle
@@ -198,14 +193,15 @@ INST strload_inst(char *remainingLine, uint32_t address, Opcode opcode) {
                 modify_instruction(&instr, 16, 20, reg_to_binary(parsed.Xm));
                 modify_instruction(&instr, 10, 15, 0x1a);
                 break;
-            case PRE_INDEX: case POST_INDEX:
+            case PRE_INDEX:
+            case POST_INDEX:
                 modify_instruction(&instr, 12, 20, parsed.simm);
                 modify_instruction(&instr, 11, 11, parsed.mode == PRE_INDEX ? 1 : 0);
                 modify_instruction(&instr, 10, 10, 1);
                 break;
             case UNSIGNED_OFFSET:
                 imm12 = parsed.Rt.is64Mode ? parsed.imm / 8 : parsed.imm / 4;
-                // printf("imm12 for unsigned offset is %d\n", imm12);
+                // PRINT("imm12 for unsigned offset is %d\n", imm12);
                 modify_instruction(&instr, 10, 21, imm12);
                 break;
             default:

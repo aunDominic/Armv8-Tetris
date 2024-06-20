@@ -2,10 +2,11 @@
 // Created by Ahmad Jamsari on 30/05/24.
 //
 
+#include "symbol_table.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "symbol_table.h"
 
 #define INITIAL_SIZE 16
 
@@ -18,9 +19,9 @@ struct SymbolTable {
 // make sure to initialize this at start of program.
 SymbolTable *symbol_table = NULL;
 
-SymbolTable* createSymbolTable() {
+SymbolTable *createSymbolTable() {
     SymbolTable *table = malloc(sizeof(SymbolTable));
-    table->symbols = (Symbol*) malloc(INITIAL_SIZE * sizeof(Symbol));
+    table->symbols = (Symbol *)malloc(INITIAL_SIZE * sizeof(Symbol));
     table->size = 0;
     table->capacity = INITIAL_SIZE;
     return table;
@@ -30,7 +31,7 @@ void addSymbol(SymbolTable *table, const char *symbol, const int addr) {
     // resizing logic, just double the size
     if (table->size == table->capacity) {
         table->capacity *= 2;
-        table->symbols = (Symbol*) realloc(table->symbols, table->capacity * sizeof(Symbol));
+        table->symbols = (Symbol *)realloc(table->symbols, table->capacity * sizeof(Symbol));
     }
     table->symbols[table->size].symbol = strdup(symbol);
     table->symbols[table->size].addr = addr;
@@ -44,7 +45,7 @@ int32_t getValue(const SymbolTable *table, const char *symbol) {
         }
     }
     // perror("Symbol_Table symbol not found. Shouldn't happen.\n");
-    // printf("%sgetValue attempted match with \n", symbol);
+    // PRINT("%sgetValue attempted match with \n", symbol);
     return NOT_FOUND;
 }
 
