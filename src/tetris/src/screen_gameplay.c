@@ -55,17 +55,6 @@ static bool leftKeyHeld = false;
 static bool rightKeyHeld = false;
 static bool dasActive = false;
 
-Color tetr_colors[8] = {
-        BLACK,
-        YELLOW, // done
-        LIGHTBLUE, // done
-        LIMEGREEN, // done
-        RED, // done
-        ORANGE, // done
-        JBLUE, // done
-        PURPLE, // dibe
-};
-
 //----------------------------------------------------------------------------------
 // Gameplay Movement Handling Function Defintions
 //----------------------------------------------------------------------------------
@@ -190,7 +179,7 @@ void DrawGameplayScreen(void)
                   next_five_pieces[i],
                   0, // default rotation upright
                   NEXT_FIVE_BLOCK_SIZE,
-                  tetr_colors[next_five_pieces[i]]);
+                  WHITE);
     }
     EndTextureMode();
 
