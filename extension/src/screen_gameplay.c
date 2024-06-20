@@ -460,7 +460,7 @@ static void DrawPiece(
             Color blockTint = blockType == EMPTY ? WHITE : tint; // don't tint empty blocks
             DrawBlock(posX + x * blockSize,
                       posY + y * blockSize,
-                      tetrominoes[(int)tetrominoType][tetrominoRotation][y][x],
+                      blockType,
                       blockSize,
                       blockTint);
         }
