@@ -1,7 +1,8 @@
 # NEW FILE STUFF FOR TESTING
 
 CC = cc
-CFLAGS = -Wall -Wextra -g3
+CFLAGS = -Wall -Wextra -g3 -fsanitize=undefined,address
+LDFLAGS = -fsanitize=undefined,address
 
 # Define the targets
 TARGETS := assemble emulate
