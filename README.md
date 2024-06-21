@@ -14,6 +14,9 @@ across most machines.
 
 For marking purposes:
 Dominic and Sahil built the base game of tetris. Ahmad added some basic quality of life features to tetris. 
-And Andrey helped flesh out the graphics and added lots of additional features to the game.
+And Andrei helped flesh out the graphics and added lots of additional features to the game.
+We just squashed commits when merging (for the purposes of keeping a cleaner code repository - it still preserves the commit info)
+
+Though this makes it so that some people's changes aren't as visible on gitlab (ie Andrei contributed a lot)
 
 Terairk is Ahmad Jamsari (He just forgot to change the name when using git locally hence the changes you see)
