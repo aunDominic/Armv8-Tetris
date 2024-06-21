@@ -11,3 +11,9 @@ To build Tetris:
 You may have to use CLion (or maybe run cmake in the extension subfolder)
 We've found that cmake is the most reliable way of building and running tetris 
 across most machines.
+
+For marking purposes:
+Dominic and Sahil built the base game of tetris. Ahmad added some basic quality of life features to tetris. 
+And Andrey helped flesh out the graphics and added lots of additional features to the game.
+
+Terairk is Ahmad Jamsari (He just forgot to change the name when using git locally hence the changes you see)
